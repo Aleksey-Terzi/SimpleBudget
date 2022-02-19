@@ -1,0 +1,228 @@
+﻿@model SimpleBudget.Web.Models.Reports.MonthlyModel
+
+<style>
+    table.categories th:nth-child(2),
+    table.categories td:nth-child(2),
+    table.categories th:nth-child(3),
+    table.categories td:nth-child(3),
+    table.categories th:nth-child(4),
+    table.categories td:nth-child(4),
+    table.categories th:nth-child(5),
+    table.categories td:nth-child(5) {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    table.wallets th,
+    table.wallets td {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    table.wallets th:nth-child(1),
+    table.wallets td:nth-child(1) {
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    small {
+        font-size: 65%;
+    }
+
+    td.zero {
+        color:lightgrey;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Taxes</h5>
+    </div>
+    <div class="card-body">
+
+        <div class="row pb-3">
+            <div class="col-md-8">
+                Year:
+                <select id="SelectedYear" class="mr-3">
+                    @foreach (var year in Model.Years)
+                    {
+                        <option value="@year" selected="@(Model.SelectedYear == year)">@year</option>
+                    }
+                </select>
+
+                Month:
+                <select id="SelectedMonth">
+                    @foreach (var month in Model.Months)
+                    {
+                        <option value="@month.Number" selected="@(Model.SelectedMonth == month.Number)">@month.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="header">Spendings by Categories</div>
+
+                <table class="table table-striped categories">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Month</th>
+                            <th>Plan</th>
+                            <th>Need</th>
+                            @if (Model.ShowWeekly)
+                            {
+                                <th>Week</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Categories)
+                        {
+                            <tr>
+                                <td>
+                                    <a target="_blank" href="@Model.GetPaymentUrl(item)">@item.CategoryName</a>
+                                </td>
+                                <td @(item.Month == 0 ? "class=zero" : "")>
+                                    @Html.Raw(item.FormattedMonth)
+                                </td>
+                                <td @(item.Plan == 0 ? "class=zero" : "")>
+                                    @Html.Raw(item.FormattedPlan)
+                                </td>
+                                <td @(item.Need == 0 ? "class=zero" : "")>
+                                    @Html.Raw(item.FormattedNeed)
+                                </td>
+                                @if (Model.ShowWeekly)
+                                {
+                                    <td @(item.Week == 0 ? "class=zero" : "")>
+                                        @Html.Raw(item.FormattedWeek)
+                                    </td>
+                                }
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="2" style="text-align:right;">
+                                <strong>@Html.Raw(Model.FormattedTotalCategoryMonth)</strong>
+                            </td>
+                            <td style="text-align:right;">
+                                <strong>@Html.Raw(Model.FormattedTotalCategoryPlan)</strong>
+                            </td>
+                            <td style="text-align:right;">
+                                <strong>@Html.Raw(Model.FormattedTotalCategoryNeed)</strong>
+                            </td>
+                            @if (Model.ShowWeekly)
+                            {
+                                <td style="text-align:right;">
+                                    <strong>@Html.Raw(Model.FormattedTotalCategoryWeek)</strong>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <div class="header">Spendings by Wallets</div>
+
+                <table class="table table-striped wallets">
+                    <thead>
+                        <tr>
+                            <th>Wallet</th>
+                            <th>Beginning</th>
+                            <th>Current</th>
+                            <th>Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Wallets)
+                        {
+                            <tr>
+                                <td>@item.WalletName</td>
+                                <td>
+                                    @Html.Raw(item.FormattedBeginningCAD)
+                                    @if (item.CurrencyCode != "CAD")
+                                    {
+                                        <div><small>@Html.Raw(item.FormattedBeginningRate) @@ @Html.Raw(item.FormattedBeginning)</small></div>
+                                    }
+                                </td>
+                                <td>
+                                    @Html.Raw(item.FormattedCurrentCAD)
+                                    @if (item.CurrencyCode != "CAD")
+                                    {
+                                        <div><small>@Html.Raw(item.FormattedCurrentRate) @@ @Html.Raw(item.FormattedCurrent)</small></div>
+                                    }
+                                </td>
+                                <td>
+                                    @Html.Raw(item.FormattedDiffCAD)
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalWalletBeginning)</strong></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalWalletCurrent)</strong></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalWalletDiff)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="header">Summary</div>
+
+                <table class="table table-striped wallets">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Beginning</th>
+                            <th>Current</th>
+                            <th>Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Summaries)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@Html.Raw(item.FormattedBeginning)</td>
+                                <td>@Html.Raw(item.FormattedCurrent)</td>
+                                <td>@Html.Raw(item.FormattedDiff)</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalSummaryBeginning)</strong></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalSummaryCurrent)</strong></td>
+                            <td><strong>@Html.Raw(@Model.FormattedTotalSummaryDiff)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div>
+                    <input type="checkbox" id="DeductTax" @(Model.DeductUnpaidTaxes ? "checked" : "") />
+                    <label for="DeductTax">Include unpaid taxes</label>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $("#SelectedYear").on("change", onCriteriaChanged);
+            $("#SelectedMonth").on("change", onCriteriaChanged);
+            $("#DeductTax").on("change", onCriteriaChanged);
+
+            function onCriteriaChanged() {
+                var selectedYear = $("#SelectedYear").find(":selected").val();
+                var selectedMonth = $("#SelectedMonth").find(":selected").val();
+                var checked = $("#DeductTax").is(":checked");
+
+                var url = "/reports/monthly?year=" + String(selectedYear) + "&month=" + String(selectedMonth) + "&deduct=" + (checked ? "1" : "0");
+
+                window.location.href = url;
+            }
+        });
+    </script>
+}

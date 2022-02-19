@@ -1,0 +1,246 @@
+﻿@model SimpleBudget.Web.Models.Payments.EditModel
+
+<div class="card">
+    <div class="card-header">
+        <h5>
+            @if (Model.Id > 0)
+            {
+                <text>Edit Payment #@Model.Id</text>
+            }
+            else
+            {
+                <text>Add Payment</text>
+            }
+        </h5>
+    </div>
+    <div class="card-body">
+
+        <form action="@Context.Request.Path@Context.Request.QueryString" method="post" autocomplete="off">
+            <div class="row">
+                <div class="col-md-6">
+
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <div>
+                            <input type="radio" id="ExpensesType" name="PaymentType" value="Expenses" @(Model.PaymentType == "Expenses" ? "checked" : "") /> <label for="ExpensesType">Expenses</label>
+                            <input type="radio" id="IncomeType" name="PaymentType" value="Income" @(Model.PaymentType == "Income" ? "checked" : "") /> <label for="IncomeType">Income</label>
+                            <input type="radio" id="TransferType" name="PaymentType" value="Transfer" @(Model.PaymentType == "Transfer" ? "checked" : "") /> <label for="TransferType">Transfer</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="Date" name="Date" placeholder="MM/dd/yyyy" maxlength="10" style="width:120px;" value="@Model.Date">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Person</label>
+                        @Html.Selector("Person", Model.Persons, Model.Person, true, "maxlength=100")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Company</label>
+                        @Html.Selector("Company", Model.Companies, Model.Company, true, "maxlength=100")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        @Html.Selector("Category", Model.Categories, Model.Category, Model.PaymentType != "Transfer", "maxlength=50")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Wallet</label>
+                        @Html.Selector("Wallet", Model.Wallets, Model.Wallet, true, "maxlength=50")
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="Description" name="Description" maxlength="100" value="@Model.Description">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Value</label>
+                        <div>
+                            <input type="text" class="form-control" id="Value" name="Value" maxlength="20" value="@Model.Value" style="width:120px;display:inline;">
+                            <input type="checkbox" id="Taxable" name="Taxable" value="true" @(Model.Taxable ? "checked" : "") style="margin-left:10px;@(Model.PaymentType != "Income" ? "display:none;": "")" />
+                            <label id="TaxableLabel" for="Taxable" style="@(Model.PaymentType != "Income" ? "display:none;": "")">Taxable</label>
+                        </div>
+                    </div>
+
+                    <div id="TaxYearField" class="mb-3" style="@(Model.ShowTaxYearField ? "" : "display:none;")">
+                        <label class="form-label">Tax Year</label>
+                        <div>
+                            <input type="text" class="form-control" id="TaxYear" name="TaxYear" maxlength="4" value="@Model.TaxYear" style="width:120px;">
+                        </div>
+                    </div>
+
+                    <div id="TransferPanel" style="@(Model.PaymentType != "Transfer" ? "display:none;": "")">
+                        <div class="mb-3">
+                            <label class="form-label">Transfer to Wallet</label>
+                            @Html.Selector("WalletTo", Model.Wallets, Model.WalletTo, true, "maxlength=50")
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Transferred Value</label>
+                            <input type="text" class="form-control" id="ValueTo" name="ValueTo" maxlength="20" value="@Model.ValueTo" style="width:120px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <input type="submit" class="btn btn-success" value="Save Changes" />
+                    @if (Model.Id > 0)
+                    {
+                        <a href="/payments?id=@Model.Id&type=@Model.Type&text=@Model.TextEncoded" class="btn btn-danger">Cancel</a>
+                    }
+                    else
+                    {
+                        <a href="/payments?page=@Model.Page&type=@Model.Type&text=@Model.TextEncoded" class="btn btn-danger">Cancel</a>
+                    }
+                </div>
+                <div class="col-md-6" style="text-align:right;">
+                    @if (Model.Id > 0)
+                    {
+                        <a href="/payments/remove?id=@Model.Id&type=@Model.Type&text=@Model.TextEncoded" class="btn btn-danger">Remove</a>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+
+    <script>
+            $(document).ready(function () {
+                $.validator.setDefaults({
+                    errorPlacement: function (error, element) {
+                        $(element).attr({ "title": error.text() });
+                    }
+                });
+
+                $.validator.addMethod("walletExists", function (value, element) {
+                    return this.optional(element) || $(element).isInCustomSelector();
+                }, "This wallet doesn't exist");
+
+                $.validator.addMethod("personExists", function (value, element) {
+                    return this.optional(element) || $(element).isInCustomSelector();
+                }, "This person doesn't exist");
+
+                $("form").validate({
+                    rules: {
+                        "Date": {
+                            required: true,
+                            regex: "^(0?[1-9]|1[012])\\/(0?[1-9]|[12][0-9]|3[01])\\/\\d{4}$"
+                        },
+                        "TaxYear": {
+                            regex: "[0-9]{4}"
+                            @if(Model.ShowTaxYearField)
+                            {
+                                <text>
+                                    ,required: true
+                                </text>
+                            }
+                        },
+                        "Wallet": {
+                            required: true,
+                            walletExists: true
+                        },
+                        "Value": {
+                            required: true,
+                            number: true,
+                            regex: "[^-]*[1-9]+.*"
+                        },
+                        "WalletTo": {
+                            required: @(Model.WalletTo != null ? "true" : "false"),
+                            walletExists: true
+                        },
+                        "ValueTo": {
+                            required: @(Model.ValueTo != null ? "true" : "false"),
+                            number: true,
+                            regex: "[^-]*[1-9]+.*"
+                        },
+                        "Person": {
+                            required: @(Model.ShowTaxYearField || Model.PaymentType == "Income" ? "true" : "false"),
+                            personExists: true
+                        },
+                    },
+                    messages: {
+                        "Date": {
+                            regex: "The allowed format is MM/dd/yyyy"
+                        },
+                        "TaxYear": {
+                            regex: "The tax year must have 4 digits"
+                        },
+                        "Value": {
+                            regex: "The positive number is expected"
+                        },
+                        "ValueTo": {
+                            regex: "The positive number is expected"
+                        }
+                    }
+                });
+
+                $("#ExpensesType, #IncomeType, #TransferType").on("click", function () {
+                    var id = $(this).attr("id");
+                    var $category = $("#Category");
+
+                    if (id == "TransferType") {
+                        $category.setCustomSelectorValue("Transfer");
+                        $category.enableCustomSelector(false);
+
+                        $("#TransferPanel").show();
+
+                        $("#WalletTo").rules("add", "required");
+                        $("#ValueTo").rules("add", "required");
+                    } else {
+                        $category.enableCustomSelector(true);
+                        $("#TransferPanel").hide();
+
+                        $("#WalletTo").rules("remove", "required");
+                        $("#ValueTo").rules("remove", "required");
+                    }
+
+                    if (id == "IncomeType") {
+                        $("#Taxable").show();
+                        $("#TaxableLabel").show();
+                    } else {
+                        $("#Taxable").hide();
+                        $("#TaxableLabel").hide();
+                    }
+
+                    setTaxVisibility();
+                });
+
+                $("#Value").on("blur", function () {
+                    var $valueTo = $("#ValueTo");
+
+                    if ($valueTo.is(":visible") && (!$valueTo.val() || $valueTo.val().length == 0))
+                        $valueTo.val($(this).val());
+                });
+
+                $("#Category").on("change keyup", function () {
+                    setTaxVisibility();
+                });
+
+                function setTaxVisibility() {
+                    var isTaxExepense = $("#ExpensesType").is(":checked") && $("#Category").val().toLowerCase() == "@SimpleBudget.Data.Constants.Category.Taxes.ToLower()";
+
+                    if (isTaxExepense) {
+                        $("#TaxYearField").show();
+                        $("#TaxYear").rules("add", "required");
+                        $("#Person").rules("add", "required");
+                    } else {
+                        $("#TaxYearField").hide();
+                        $("#TaxYear").rules("remove", "required");
+
+                        if ($("#IncomeType").is(":checked"))
+                            $("#Person").rules("add", "required");
+                        else
+                            $("#Person").rules("remove", "required");
+                    }
+                }
+            });
+    </script>
+}

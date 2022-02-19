@@ -1,0 +1,29 @@
+# Temporary files
+
+.vs/
+
+# User files
+*.suo
+*.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+*.log
+*.obj
+*.pdb
+
+# NuGet Packages
+*.nupkg
+**/[Pp]ackages/*
+
+# Visual Studio cache files
+*.[Cc]ache
+# but keep track of directories ending in .cache
+!*.[Cc]ache/

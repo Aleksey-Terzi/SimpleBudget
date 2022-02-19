@@ -1,0 +1,65 @@
+html {
+    font-size:14px;
+}
+
+body {
+    padding-bottom: 20px;
+}
+
+div.container-body {
+    padding-top:70px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+.panel-title span {
+    margin-right: 15px;
+}
+
+small {
+    color: #777;
+}
+
+label.error {
+    color: red;
+}
+
+.form-group div input.form-control {
+    display: inline;
+}
+
+.form-group div label {
+    font-weight: normal;
+}
+
+input.form-control.error {
+    border-color: red;
+}
+
+div.header {
+    color: #777;
+    background-color: #f5f5f5;
+    padding: 5px;
+    font-size: 20px;
+}
+
+label.form-label {
+    font-weight:bold;
+}
+
+.custom-selector .dropdown-menu {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.custom-selector .btn-outline-secondary {
+    border-color: #ced4da;
+    padding-left: 12px;
+    padding-right: 12px;
+    color: #212529;
+}

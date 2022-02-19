@@ -1,0 +1,44 @@
+﻿@model SimpleBudget.Web.Models.Categories.RemoveModel
+
+<div class="card">
+    <div class="card-header">
+        <h5>Remove Category</h5>
+    </div>
+    <div class="card-body">
+
+        @if (Model.PaymentCount > 0)
+        {
+            <div class="alert alert-danger" role="alert">
+                This category cannot be removed because of used in payments
+            </div>
+        }
+
+        <form action="@Context.Request.Path@Context.Request.QueryString" method="post" autocomplete="off">
+            <div class="row">
+                <div class="col-md-6">
+
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <div>
+                            @Model.Name
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"># of Payments</label>
+                        <div>
+                            @Model.PaymentCount
+                        </div>
+                    </div>
+
+                    @if (Model.PaymentCount == 0)
+                    {
+                        <input type="submit" class="btn btn-danger" value="Remove" />
+                    }
+
+                    <a href="/dictionaries/categories" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

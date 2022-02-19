@@ -1,0 +1,180 @@
+﻿@model SimpleBudget.Web.Models.Reports.TaxModel
+
+<style>
+    table.income td:nth-child(1) {
+        white-space: nowrap;
+    }
+
+    table.income th:nth-child(4),
+    table.income td:nth-child(4) {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    table.taxes th:nth-child(2),
+    table.taxes td:nth-child(2),
+    table.taxes th:nth-child(3),
+    table.taxes td:nth-child(3),
+    table.taxes th:nth-child(4),
+    table.taxes td:nth-child(4) {
+        text-align: right;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Taxes</h5>
+    </div>
+    <div class="card-body">
+
+        <div class="row pb-3">
+            <div class="col-md-8">
+                Person:
+                <select id="SelectedPersonId" class="mr-3">
+                    @foreach (var person in Model.Persons)
+                    {
+                        <option value="@person.PersonId" selected="@(Model.SelectedPersonId == person.PersonId)">@person.Name</option>
+                    }
+                </select>
+
+                Year:
+                <select id="SelectedYear">
+                    @foreach (var year in Model.Years)
+                    {
+                        <option value="@year" selected="@(Model.SelectedYear == year)">@year</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="header">Taxable Income</div>
+
+                <table class="table table-striped income">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Wallet</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.IncomeItems)
+                        {
+                            <tr>
+                                <td>
+                                    @item.FormattedPaymentDate
+                                    <small>#@item.PaymentId</small>
+                                </td>
+                                <td>
+                                    @item.Description
+                                    @if(item.CompanyName != null || item.CategoryName != null)
+                                    {
+                                        <div>
+                                            <small>
+                                                @(item.CompanyName != null ? item.CompanyName: "")
+                                                @(item.CompanyName != null && item.CategoryName != null ? "/": "")
+                                                @(item.CategoryName != null ? item.CategoryName : "")
+                                            </small>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    @item.WalletName
+                                </td>
+                                <td>
+                                    @Html.Raw(item.FormattedValueCAD)
+                                    @if (item.CurrencyCode != "CAD")
+                                    {
+                                        <div><small>@Html.Raw(item.FormattedRate) @@ @Html.Raw(item.FormattedValue)</small></div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="4" style="text-align:right;"><strong>@Html.Raw(Model.FormattedIncomeTotalValue)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div class="header">Taxes</div>
+
+                <table class="table table-striped taxes">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                            <th>Paid</th>
+                            <th>Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.TaxItems)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@Html.Raw(item.FormattedValue)</td>
+                                <td>@Html.Raw(item.FormattedValuePaid)</td>
+                                <td>@Html.Raw(item.FormattedDiff)</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td></td>
+                            <td><strong>@Html.Raw(Model.FormattedTaxTotal)</strong></td>
+                            <td><strong>@Html.Raw(Model.FormattedTaxPaidTotal)</strong></td>
+                            <td><strong>@Html.Raw(Model.FormattedTaxDiffTotal)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="text-align:right;">
+                    Taxable Income: <strong>@Html.Raw(Model.FormattedIncomeTotalValue)</strong>
+                </div>
+
+                @if (Model.Closed.HasValue)
+                {
+                    <div style="text-align:right;padding-top:10px;">
+                        Closed: <b>@string.Format("{0:MMM d, yyyy}", Model.Closed)</b>
+                    </div>
+                }
+
+                <div class="pt-4 text-end">
+                    <form action="@Context.Request.Path@Context.Request.QueryString" method="post" autocomplete="off">
+                        @if (Model.Closed == null)
+                        {
+                            <input type="submit" class="btn btn-danger" value="Close Tax Year" onclick="return confirm('Are you sure to close the tax year?');" />
+                        }
+                        else if (Model.SelectedYear == DateTime.Now.Year || Model.SelectedYear == DateTime.Now.Year - 1)
+                        {
+                            <input type="submit" class="btn btn-warning" value="Re-open Tax Year" onclick="return confirm('Are you sure to re-open the tax year?');" />
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $("#SelectedPersonId").on("change", onCriteriaChanged);
+            $("#SelectedYear").on("change", onCriteriaChanged);
+
+            function onCriteriaChanged() {
+                var selectedPersonId = $("#SelectedPersonId").find(":selected").val();
+                var selectedYear = $("#SelectedYear").find(":selected").val();
+
+                var url = "/reports/tax?personId=" + String(selectedPersonId) + "&year=" + String(selectedYear);
+
+                window.location.href = url;
+            }
+        });
+    </script>
+}
