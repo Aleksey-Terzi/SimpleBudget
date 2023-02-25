@@ -79,6 +79,7 @@ namespace SimpleBudget.Web.Controllers
             ViewData["menu"] = WebConstants.MenuActions.Payments;
 
             var paymentType = type == "transfer" ? "Transfer" : (type == "income" ? "Income" : "Expenses");
+            var now = TimeHelper.GetLocalTime();
 
             var model = new EditModel
             {
@@ -86,10 +87,10 @@ namespace SimpleBudget.Web.Controllers
                 Type = type,
                 Text = text,
                 PaymentType = paymentType,
-                Date = string.Format(CultureInfo.InvariantCulture, "{0:MM/dd/yyyy}", DateTime.Now),
+                Date = string.Format(CultureInfo.InvariantCulture, "{0:MM/dd/yyyy}", now),
                 Category = paymentType == "Transfer" ? "Transfer" : null,
                 Taxable = true,
-                TaxYear = DateTime.Now.Year
+                TaxYear = now.Year
             };
 
             LoadSelectors(model);

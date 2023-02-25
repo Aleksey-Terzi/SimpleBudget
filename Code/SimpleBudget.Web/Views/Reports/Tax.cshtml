@@ -149,7 +149,7 @@
                         {
                             <input type="submit" class="btn btn-danger" value="Close Tax Year" onclick="return confirm('Are you sure to close the tax year?');" />
                         }
-                        else if (Model.SelectedYear == DateTime.Now.Year || Model.SelectedYear == DateTime.Now.Year - 1)
+                        else if (Model.SelectedYear == TimeHelper.GetLocalTime().Year || Model.SelectedYear == TimeHelper.GetLocalTime().Year - 1)
                         {
                             <input type="submit" class="btn btn-warning" value="Re-open Tax Year" onclick="return confirm('Are you sure to re-open the tax year?');" />
                         }

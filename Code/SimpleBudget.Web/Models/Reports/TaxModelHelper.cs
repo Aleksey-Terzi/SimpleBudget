@@ -165,7 +165,7 @@ namespace SimpleBudget.Web.Models.Reports
 
             _model.ValueFormat = cad.ValueFormat;
 
-            var currentYear = DateTime.Now.Year;
+            var currentYear = TimeHelper.GetLocalTime().Year;
 
             _model.Years = new List<int>();
             if (currentYear > 2020)
@@ -316,7 +316,8 @@ namespace SimpleBudget.Web.Models.Reports
 
             if (_income > 0)
             {
-                var currentMonth = _limitMonth ?? (_model.SelectedYear == DateTime.Now.Year ? DateTime.Now.Month : 12);
+                var now = TimeHelper.GetLocalTime();
+                var currentMonth = _limitMonth ?? (_model.SelectedYear == now.Year ? now.Month : 12);
                 var incomeMonths = currentMonth;
 
                 if (_model.IncomeItems.FirstOrDefault(x => x.PaymentDate.Month == currentMonth) == null)

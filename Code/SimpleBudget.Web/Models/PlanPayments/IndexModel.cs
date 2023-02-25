@@ -43,7 +43,14 @@ namespace SimpleBudget.Web.Models.PlanPayments
             public int? TaxYear { get; set; }
             public bool IsActive { get; set; }
 
-            public bool IsActiveAndInDate => IsActive && (PaymentEndDate == null || PaymentEndDate.Value >= new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+            public bool IsActiveAndInDate
+            {
+                get
+                {
+                    var now = TimeHelper.GetLocalTime();
+                    return IsActive && (PaymentEndDate == null || PaymentEndDate.Value >= new DateTime(now.Year, now.Month, 1));
+                }
+            }
 
             public string FormattedPaymentDateRange => PaymentEndDate.HasValue
                 ? $"{PaymentStartDate:MMM d, yyyy} - {PaymentEndDate:MMM d, yyyy}"

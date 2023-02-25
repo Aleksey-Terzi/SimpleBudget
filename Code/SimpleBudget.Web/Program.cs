@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 using SimpleBudget.Data;
+using SimpleBudget.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services
     });
 
 Constants.BudgetConnectionString = builder.Configuration.GetConnectionString("Budget");
+
+TimeHelper.SetTimeZone(builder.Configuration.GetSection("Settings")["TimeZone"]);
 
 var app = builder.Build();
 

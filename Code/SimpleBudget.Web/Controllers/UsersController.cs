@@ -50,7 +50,7 @@ namespace SimpleBudget.Web.Controllers
                 {
                     await Authenticate(user);
 
-                    Response.Cookies.Append("Username", model.Username, new CookieOptions { Expires = DateTime.Now.AddMonths(1) });
+                    Response.Cookies.Append("Username", model.Username, new CookieOptions { Expires = TimeHelper.GetLocalTime().AddMonths(1) });
 
                     return LocalRedirect(model.RedirectUrl ?? "/");
                 }

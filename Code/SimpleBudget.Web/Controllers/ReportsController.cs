@@ -47,7 +47,7 @@ namespace SimpleBudget.Web.Controllers
                 }).ToList();
 
             if (model.DeductUnpaidTaxes)
-                model.Tax = CalculateUnpaidTax(DateTime.Now.Year, null, null);
+                model.Tax = CalculateUnpaidTax(TimeHelper.GetLocalTime().Year, null, null);
 
             return View(model);
         }
@@ -117,16 +117,18 @@ namespace SimpleBudget.Web.Controllers
             if (cad == null)
                 throw new ArgumentException($"CAD currency is not found");
 
+            var now = TimeHelper.GetLocalTime();
+
             var model = new MonthlyModel
             {
-                SelectedYear = year ?? DateTime.Now.Year,
-                SelectedMonth = month ?? DateTime.Now.Month,
+                SelectedYear = year ?? now.Year,
+                SelectedMonth = month ?? now.Month,
                 DeductUnpaidTaxes = deduct != 0,
                 ValueFormat = cad.ValueFormat
             };
 
             model.Years = new List<int>();
-            for (int i = 2020; i <= DateTime.Now.Year; i++)
+            for (int i = 2020; i <= now.Year; i++)
                 model.Years.Add(i);
 
             model.Months = new List<MonthlyModel.MonthItem>();
