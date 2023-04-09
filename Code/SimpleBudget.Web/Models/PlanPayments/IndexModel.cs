@@ -1,5 +1,7 @@
 ﻿using System.Web;
 
+using SimpleBudget.Data;
+
 namespace SimpleBudget.Web.Models.PlanPayments
 {
     public class IndexModel

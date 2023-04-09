@@ -1,4 +1,4 @@
-﻿namespace SimpleBudget.Web
+﻿namespace SimpleBudget.Data
 {
     public static class TimeHelper
     {

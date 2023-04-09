@@ -120,6 +120,13 @@ namespace SimpleBudget.Data
             if (!string.IsNullOrEmpty(filter.Category))
                 result = result.Where(x => x.Category.Name == filter.Category);
 
+            if (filter.IsActive.HasValue)
+            {
+                var now = TimeHelper.GetLocalTime();
+                var thisMonth = new DateTime(now.Year, now.Month, 1);
+                result = result.Where(x => x.IsActive == filter.IsActive && (x.PaymentEndDate == null || x.PaymentEndDate >= thisMonth));
+            }
+
             return result;
         }
     }

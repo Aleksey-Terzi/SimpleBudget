@@ -80,6 +80,10 @@ namespace SimpleBudget.Web
             {
                 filter.Category = value;
             }
+            else if (string.Equals(name, "status", StringComparison.OrdinalIgnoreCase) && filter is PlanPaymentFilter planFilter)
+            {
+                planFilter.IsActive = string.Equals(value, "active", StringComparison.OrdinalIgnoreCase);
+            }
             else
             {
                 filter.SearchText = value;
