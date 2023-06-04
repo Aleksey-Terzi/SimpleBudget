@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -8,18 +9,18 @@ namespace SimpleBudget.Data
         public string Name { get; set; } = default!;
         public string Password { get; set; } = default!;
 
-        public virtual ICollection<Payment> CreatedPayments { get; set; } = new HashSet<Payment>();
-        public virtual ICollection<Payment> ModifiedPayments { get; set; } = new HashSet<Payment>();
-        public virtual ICollection<PlanPayment> CreatedPlanPayments { get; set; } = new HashSet<PlanPayment>();
-        public virtual ICollection<PlanPayment> ModifiedPlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<Payment> CreatedPayments { get; set; } = new HashSet<Payment>();
+        public ICollection<Payment> ModifiedPayments { get; set; } = new HashSet<Payment>();
+        public ICollection<PlanPayment> CreatedPlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<PlanPayment> ModifiedPlanPayments { get; set; } = new HashSet<PlanPayment>();
     }
 
-    public class UserConfiguration : EntityTypeConfiguration<User>
+    public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        public UserConfiguration()
+        public void Configure(EntityTypeBuilder<User> builder)
         {
-            ToTable("dbo.User");
-            HasKey(x => x.UserId);
+            builder.ToTable("User", "dbo");
+            builder.HasKey(x => x.UserId);
         }
     }
 }

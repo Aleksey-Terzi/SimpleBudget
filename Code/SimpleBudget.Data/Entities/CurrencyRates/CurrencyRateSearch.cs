@@ -2,6 +2,6 @@
 {
     public class CurrencyRateSearch : SearchHelper<CurrencyRate>
     {
-        internal CurrencyRateSearch() { }
+        public CurrencyRateSearch(BudgetDbContext context) : base(context) { }
     }
 }

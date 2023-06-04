@@ -2,6 +2,6 @@
 {
     public class PersonStore : StoreHelper<Person>
     {
-        internal PersonStore() { }
+        public PersonStore(BudgetDbContext context) : base(context) { }
     }
 }

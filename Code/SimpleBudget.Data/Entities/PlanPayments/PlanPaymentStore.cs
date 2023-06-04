@@ -2,6 +2,6 @@
 {
     public class PlanPaymentStore : StoreHelper<PlanPayment>
     {
-        internal PlanPaymentStore() { }
+        public PlanPaymentStore(BudgetDbContext context) : base(context) { }
     }
 }

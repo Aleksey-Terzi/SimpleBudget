@@ -2,6 +2,6 @@
 {
     public class AccountStore : StoreHelper<Account>
     {
-        internal AccountStore() { }
+        public AccountStore(BudgetDbContext context) : base(context) { }
     }
 }

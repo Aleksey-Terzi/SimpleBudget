@@ -2,6 +2,6 @@
 {
     public class CurrencyStore : StoreHelper<Currency>
     {
-        internal CurrencyStore() { }
+        public CurrencyStore(BudgetDbContext context) : base(context) { }
     }
 }

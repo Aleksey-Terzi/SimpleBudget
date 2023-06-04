@@ -1,50 +1,44 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace SimpleBudget.Data
 {
-    class BudgetDbContext : DbContext
+    public class BudgetDbContext : DbContext
     {
-        public DbSet<Account> Accounts { get; set; } = default!;
-        public DbSet<Category> Categories { get; set; } = default!;
-        public DbSet<Company> Companies { get; set; } = default!;
-        public DbSet<Currency> Currencies { get; set; } = default!;
-        public DbSet<CurrencyRate> CurrencyRates { get; set; } = default!;
-        public DbSet<Payment> Payments { get; set; } = default!;
-        public DbSet<PlanPayment> PlanPayments { get; set; } = default!;
-        public DbSet<Person> Persons { get; set; } = default!;
-        public DbSet<TaxRate> TaxRates { get; set; } = default!;
-        public DbSet<TaxSetting> TaxSettings { get; set; } = default!;
-        public DbSet<TaxYear> TaxYears { get; set; } = default!;
-        public DbSet<User> Users { get; set; } = default!;
-        public DbSet<Wallet> Wallets { get; set; } = default!;
+        internal DbSet<Account> Accounts { get; set; } = default!;
+        internal DbSet<Category> Categories { get; set; } = default!;
+        internal DbSet<Company> Companies { get; set; } = default!;
+        internal DbSet<Currency> Currencies { get; set; } = default!;
+        internal DbSet<CurrencyRate> CurrencyRates { get; set; } = default!;
+        internal DbSet<Payment> Payments { get; set; } = default!;
+        internal DbSet<PlanPayment> PlanPayments { get; set; } = default!;
+        internal DbSet<Person> Persons { get; set; } = default!;
+        internal DbSet<TaxRate> TaxRates { get; set; } = default!;
+        internal DbSet<TaxSetting> TaxSettings { get; set; } = default!;
+        internal DbSet<TaxYear> TaxYears { get; set; } = default!;
+        internal DbSet<User> Users { get; set; } = default!;
+        internal DbSet<Wallet> Wallets { get; set; } = default!;
 
-        static BudgetDbContext()
-        {
-            Database.SetInitializer<BudgetDbContext>(null);
-        }
-
-        public BudgetDbContext()
-            : base(Constants.BudgetConnectionString)
+        public BudgetDbContext(DbContextOptions options) : base(options)
         {
         }
 
-        protected override void OnModelCreating(DbModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            builder.Configurations.Add(new AccountConfiguration());
-            builder.Configurations.Add(new CategoryConfiguration());
-            builder.Configurations.Add(new CompanyConfiguration());
-            builder.Configurations.Add(new CurrencyConfiguration());
-            builder.Configurations.Add(new CurrencyRateConfiguration());
-            builder.Configurations.Add(new PaymentConfiguration());
-            builder.Configurations.Add(new PlanPaymentConfiguration());
-            builder.Configurations.Add(new PersonConfiguration());
-            builder.Configurations.Add(new TaxRateConfiguration());
-            builder.Configurations.Add(new TaxSettingConfiguration());
-            builder.Configurations.Add(new TaxYearConfiguration());
-            builder.Configurations.Add(new UserConfiguration());
-            builder.Configurations.Add(new WalletConfiguration());
+            builder.ApplyConfiguration(new AccountConfiguration());
+            builder.ApplyConfiguration(new CategoryConfiguration());
+            builder.ApplyConfiguration(new CompanyConfiguration());
+            builder.ApplyConfiguration(new CurrencyConfiguration());
+            builder.ApplyConfiguration(new CurrencyRateConfiguration());
+            builder.ApplyConfiguration(new PaymentConfiguration());
+            builder.ApplyConfiguration(new PlanPaymentConfiguration());
+            builder.ApplyConfiguration(new PersonConfiguration());
+            builder.ApplyConfiguration(new TaxRateConfiguration());
+            builder.ApplyConfiguration(new TaxSettingConfiguration());
+            builder.ApplyConfiguration(new TaxYearConfiguration());
+            builder.ApplyConfiguration(new UserConfiguration());
+            builder.ApplyConfiguration(new WalletConfiguration());
         }
     }
 }

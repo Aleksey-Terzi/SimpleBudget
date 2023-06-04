@@ -2,6 +2,6 @@
 {
     public class CompanySearch : SearchHelper<Company>
     {
-        internal CompanySearch() { }
+        public CompanySearch(BudgetDbContext context) : base(context) { }
     }
 }

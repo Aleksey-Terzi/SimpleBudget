@@ -1,34 +1,32 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace SimpleBudget.Data
 {
     public abstract class StoreHelper<TEntity> where TEntity: class
     {
-        public void Insert(TEntity entity)
+        private readonly BudgetDbContext _context;
+
+        protected StoreHelper(BudgetDbContext context)
         {
-            using (var db = new BudgetDbContext())
-            {
-                db.Entry(entity).State = EntityState.Added;
-                db.SaveChanges();
-            }
+            _context = context;
         }
 
-        public void Update(TEntity entity)
+        public async Task Insert(TEntity entity)
         {
-            using (var db = new BudgetDbContext())
-            {
-                db.Entry(entity).State = EntityState.Modified;
-                db.SaveChanges();
-            }
+            _context.Entry(entity).State = EntityState.Added;
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(TEntity entity)
+        public async Task Update(TEntity entity)
         {
-            using (var db = new BudgetDbContext())
-            {
-                db.Entry(entity).State = EntityState.Deleted;
-                db.SaveChanges();
-            }
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Delete(TEntity entity)
+        {
+            _context.Entry(entity).State = EntityState.Deleted;
+            await _context.SaveChangesAsync();
         }
     }
 }

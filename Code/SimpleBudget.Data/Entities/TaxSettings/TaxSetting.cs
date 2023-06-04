@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -10,17 +11,20 @@ namespace SimpleBudget.Data
         public int PeriodYear { get; set; }
         public decimal Value { get; set; }
 
-        public virtual Account Account { get; set; } = default!;
+        public Account Account { get; set; } = default!;
     }
 
-    public class TaxSettingConfiguration : EntityTypeConfiguration<TaxSetting>
+    public class TaxSettingConfiguration : IEntityTypeConfiguration<TaxSetting>
     {
-        public TaxSettingConfiguration()
+        public void Configure(EntityTypeBuilder<TaxSetting> builder)
         {
-            ToTable("dbo.TaxSetting");
-            HasKey(x => x.TaxSettingId);
+            builder.ToTable("TaxSetting", "dbo");
+            builder.HasKey(x => x.TaxSettingId);
 
-            HasRequired(a => a.Account).WithMany(b => b.TaxSettings).HasForeignKey(a => a.AccountId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Account)
+                .WithMany(b => b.TaxSettings)
+                .HasForeignKey(a => a.AccountId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

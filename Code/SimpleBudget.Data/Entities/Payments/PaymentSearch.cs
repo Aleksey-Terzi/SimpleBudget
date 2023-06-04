@@ -1,52 +1,51 @@
 ﻿using System.Linq.Expressions;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace SimpleBudget.Data
 {
     public class PaymentSearch : SearchHelper<Payment>
     {
-        internal PaymentSearch() { }
+        public PaymentSearch(BudgetDbContext context) : base(context) { }
 
-        public int GetRowNumber(int paymentId, PaymentFilter filter)
+        public async Task<int> GetRowNumber(int paymentId, PaymentFilter filter)
         {
-            using (var db = new BudgetDbContext())
-            {
-                var payment = db.Payments.AsNoTracking().FirstOrDefault(x => x.PaymentId == paymentId);
+            var payment = await Context.Payments.AsNoTracking().FirstOrDefaultAsync(x => x.PaymentId == paymentId);
 
-                if (payment == null)
-                    return -1;
+            if (payment == null)
+                return -1;
 
-                var query = FilterQuery(filter, db.Payments);
+            var query = FilterQuery(filter, Context.Payments);
                 
-                var count = query.Where(x =>
-                    x.PaymentDate >= payment.PaymentDate
-                    && (
-                        x.PaymentDate > payment.PaymentDate
-                        || x.PaymentDate == payment.PaymentDate && x.PaymentId > payment.PaymentId
-                    )
-                ).Count();
+            var count = await query.Where(x =>
+                x.PaymentDate >= payment.PaymentDate
+                && (
+                    x.PaymentDate > payment.PaymentDate
+                    || x.PaymentDate == payment.PaymentDate && x.PaymentId > payment.PaymentId
+                )
+            ).CountAsync();
 
-                return count + 1;
-            }
+            return count + 1;
         }
 
-        public int Count(PaymentFilter filter)
+        public async Task<int> Count(PaymentFilter filter)
         {
-            return Count((IQueryable<Payment> query) => FilterQuery(filter, query));
+            return await Count((IQueryable<Payment> query) => FilterQuery(filter, query));
         }
 
-        public List<T> Bind<T>(
+        public async Task<List<T>> Bind<T>(
             Expression<Func<Payment, T>> binder,
             PaymentFilter filter,
             Func<IQueryable<T>, IQueryable<T>>? process)
         {
-            return ExecuteQuery(
-                query => BuildQuery(
-                    query,
-                    (IQueryable<Payment> q) => q.Select(binder),
-                    (IQueryable<Payment> q) => FilterQuery(filter, q),
-                    q => q,
-                    process
-                ).ToList()
+            return await ExecuteQuery(
+                async query => await BuildQuery(
+                        query,
+                        (IQueryable<Payment> q) => q.Select(binder),
+                        (IQueryable<Payment> q) => FilterQuery(filter, q),
+                        q => q,
+                        process
+                    ).ToListAsync()
             );
         }
 

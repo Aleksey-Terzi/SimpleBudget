@@ -2,6 +2,6 @@
 {
     public class TaxSettingSearch : SearchHelper<TaxSetting>
     {
-        internal TaxSettingSearch() { }
+        public TaxSettingSearch(BudgetDbContext context) : base(context) { }
     }
 }

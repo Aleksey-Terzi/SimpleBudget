@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -8,22 +9,25 @@ namespace SimpleBudget.Data
         public int AccountId { get; set; }
         public string Name { get; set; } = default!;
 
-        public virtual Account Account { get; set; } = default!;
+        public Account Account { get; set; } = default!;
 
-        public virtual ICollection<Wallet> Wallets { get; set; } = new HashSet<Wallet>();
-        public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
-        public virtual ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
-        public virtual ICollection<TaxYear> TaxYears { get; set; } = new HashSet<TaxYear>();
+        public ICollection<Wallet> Wallets { get; set; } = new HashSet<Wallet>();
+        public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+        public ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<TaxYear> TaxYears { get; set; } = new HashSet<TaxYear>();
     }
 
-    public class PersonConfiguration : EntityTypeConfiguration<Person>
+    public class PersonConfiguration : IEntityTypeConfiguration<Person>
     {
-        public PersonConfiguration()
+        public void Configure(EntityTypeBuilder<Person> builder)
         {
-            ToTable("dbo.Person");
-            HasKey(x => x.PersonId);
+            builder.ToTable("Person", "dbo");
+            builder.HasKey(x => x.PersonId);
 
-            HasRequired(a => a.Account).WithMany(b => b.Persons).HasForeignKey(a => a.AccountId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Account)
+                .WithMany(b => b.Persons)
+                .HasForeignKey(a => a.AccountId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

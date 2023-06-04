@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -8,20 +9,23 @@ namespace SimpleBudget.Data
         public int AccountId { get; set; }
         public string Name { get; set; } = default!;
 
-        public virtual Account Account { get; set; } = default!;
+        public Account Account { get; set; } = default!;
 
-        public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
-        public virtual ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+        public ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
     }
 
-    public class CategoryConfiguration : EntityTypeConfiguration<Category>
+    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
-        public CategoryConfiguration()
+        public void Configure(EntityTypeBuilder<Category> builder)
         {
-            ToTable("dbo.Category");
-            HasKey(x => x.CategoryId);
+            builder.ToTable("Category", "dbo");
+            builder.HasKey(x => x.CategoryId);
 
-            HasRequired(a => a.Account).WithMany(b => b.Categories).HasForeignKey(a => a.AccountId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Account)
+                .WithMany(b => b.Categories)
+                .HasForeignKey(a => a.AccountId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

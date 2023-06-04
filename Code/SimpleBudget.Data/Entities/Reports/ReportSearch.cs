@@ -1,130 +1,169 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace SimpleBudget.Data
 {
     public class ReportSearch
     {
-        internal ReportSearch() { }
+        private readonly BudgetDbContext _context;
 
-        public List<WalletSummary> SelectWalletSummary(int accountId)
+        public ReportSearch(BudgetDbContext context)
         {
-            using (var db = new BudgetDbContext())
-            {
-                return db.Payments
-                    .Where(x => x.Wallet.AccountId == accountId)
-                    .GroupBy(x => x.Wallet)
-                    .Select(x => new WalletSummary
-                    {
-                        WalletName = x.Key.Name,
-                        CurrencyCode = x.Key.Currency.Code,
-                        ValueFormat = x.Key.Currency.ValueFormat,
-                        Value = x.Sum(y => y.Value),
-                        Rate = x.Key.Currency.CurrencyRates.Where(y => !y.BankOfCanada).OrderByDescending(y => y.StartDate).Select(y => (decimal?)y.Rate).FirstOrDefault() ?? 1
-                    })
-                    .OrderBy(x => x.CurrencyCode == "CAD" ? 0 : (x.CurrencyCode == "USD" ? 1 : 2))
-                    .ThenBy(x => x.CurrencyCode)
-                    .ThenBy(x => x.WalletName)
-                    .ToList();
-            }
+            _context = context;
         }
 
-        public ReportMonthlySummary SelectReportMonthlySummary(int accountId, int year, int month)
+        public async Task<List<WalletSummary>> SelectWalletSummary(int accountId)
+        {
+            return await _context.Payments
+                .Where(x => x.Wallet.AccountId == accountId)
+                .GroupBy(x => new
+                {
+                    x.Wallet.Name,
+                    x.Wallet.Currency.CurrencyId,
+                    x.Wallet.Currency.Code,
+                    x.Wallet.Currency.ValueFormat,
+                })
+                .Select(x => new WalletSummary
+                {
+                    WalletName = x.Key.Name,
+                    CurrencyCode = x.Key.Code,
+                    ValueFormat = x.Key.ValueFormat,
+                    Value = x.Sum(y => y.Value),
+                    Rate = _context
+                        .CurrencyRates
+                        .Where(y => y.CurrencyId == x.Key.CurrencyId && !y.BankOfCanada)
+                        .OrderByDescending(y => y.StartDate)
+                        .Select(y => (decimal?)y.Rate)
+                        .FirstOrDefault() ?? 1
+                })
+                .OrderBy(x => x.CurrencyCode == "CAD" ? 0 : (x.CurrencyCode == "USD" ? 1 : 2))
+                .ThenBy(x => x.CurrencyCode)
+                .ThenBy(x => x.WalletName)
+                .ToListAsync();
+        }
+
+        public async Task<ReportMonthlySummary> SelectReportMonthlySummary(int accountId, int year, int month)
         {
             var firstDay = new DateTime(year, month, 1);
             var lastDay = (new DateTime(year, month, 1)).AddMonths(1);
 
-            using (var db = new BudgetDbContext())
-            {
-                var wallets = db.Payments
-                    .Where(x => x.Wallet.AccountId == accountId && x.PaymentDate < lastDay)
-                    .GroupBy(x => x.Wallet)
-                    .Select(x => new
-                    {
-                        Beginning = x.Where(y => y.PaymentDate < firstDay).Sum(y => (decimal?)y.Value),
-                        Current = x.Sum(y => (decimal?)y.Value),
-                        Expenses = x.Where(y => y.PaymentDate >= firstDay && y.Value < 0 && (y.Category == null || y.Category.Name != "Transfer")).Sum(y => (decimal?)y.Value),
-                        Income = x.Where(y => y.PaymentDate >= firstDay && y.Value > 0 && (y.Category == null || y.Category.Name != "Transfer")).Sum(y => (decimal?)y.Value),
-                        BeginningRate = x.Key.Currency.CurrencyRates.Where(y => y.StartDate < firstDay && !y.BankOfCanada).OrderByDescending(y => y.StartDate).Select(y => (decimal?)y.Rate).FirstOrDefault() ?? 1,
-                        CurrentRate = x.Key.Currency.CurrencyRates.Where(y => y.StartDate < lastDay && !y.BankOfCanada).OrderByDescending(y => y.StartDate).Select(y => (decimal?)y.Rate).FirstOrDefault() ?? 1
-                    })
-                    .ToList();
-
-                return new ReportMonthlySummary
+            var wallets = await _context.Payments
+                .Where(x => x.Wallet.AccountId == accountId && x.PaymentDate < lastDay)
+                .GroupBy(x => x.Wallet)
+                .Select(x => new
                 {
-                    Beginning = wallets.Count > 0 ? wallets.Sum(x => (x.Beginning ?? 0) * x.BeginningRate) : 0,
-                    Current = wallets.Count > 0 ? wallets.Sum(x => (x.Current ?? 0) * x.CurrentRate) : 0,
-                    Expenses = wallets.Count > 0 ? wallets.Sum(x => (x.Expenses ?? 0) * x.CurrentRate) : 0,
-                    Income = wallets.Count > 0 ? wallets.Sum(x => (x.Income ?? 0) * x.CurrentRate) : 0
-                };
-            }
+                    Beginning = x.Where(y => y.PaymentDate < firstDay).Sum(y => (decimal?)y.Value),
+                    Current = x.Sum(y => (decimal?)y.Value),
+                    Expenses = x.Where(y => y.PaymentDate >= firstDay && y.Value < 0 && (y.Category == null || y.Category.Name != "Transfer")).Sum(y => (decimal?)y.Value),
+                    Income = x.Where(y => y.PaymentDate >= firstDay && y.Value > 0 && (y.Category == null || y.Category.Name != "Transfer")).Sum(y => (decimal?)y.Value),
+                    BeginningRate = _context.CurrencyRates
+                        .Where(y => y.CurrencyId == x.Key.CurrencyId && y.StartDate < firstDay && !y.BankOfCanada)
+                        .OrderByDescending(y => y.StartDate)
+                        .Select(y => (decimal?)y.Rate)
+                        .FirstOrDefault() ?? 1,
+                    CurrentRate = _context.CurrencyRates
+                        .Where(y => y.CurrencyId == x.Key.CurrencyId && y.StartDate < firstDay && !y.BankOfCanada)
+                        .OrderByDescending(y => y.StartDate)
+                        .Select(y => (decimal?)y.Rate)
+                        .FirstOrDefault() ?? 1
+                })
+                .ToListAsync();
+
+            return new ReportMonthlySummary
+            {
+                Beginning = wallets.Count > 0 ? wallets.Sum(x => (x.Beginning ?? 0) * x.BeginningRate) : 0,
+                Current = wallets.Count > 0 ? wallets.Sum(x => (x.Current ?? 0) * x.CurrentRate) : 0,
+                Expenses = wallets.Count > 0 ? wallets.Sum(x => (x.Expenses ?? 0) * x.CurrentRate) : 0,
+                Income = wallets.Count > 0 ? wallets.Sum(x => (x.Income ?? 0) * x.CurrentRate) : 0
+            };
         }
 
-        public List<ReportMonthly.Category> SelectReportWeekly(int accountId, DateTime firstDay)
+        public async Task<List<ReportMonthly.Category>> SelectReportWeekly(int accountId, DateTime firstDay)
         {
             var lastDay = firstDay.AddDays(7);
 
-            using (var db = new BudgetDbContext())
+            var values = await _context.Payments
+                .Where(x =>
+                    x.Wallet.AccountId == accountId
+                    && x.PaymentDate >= firstDay
+                    && x.PaymentDate < lastDay
+                    && x.Value < 0
+                    && x.Category.Name != "Transfer"
+                    && x.Category.Name != Constants.Category.Taxes
+                )
+                .GroupBy(x => new
+                {
+                    CategoryName = x.Category.Name ?? "[No Category]",
+                    x.Wallet.CurrencyId
+                })
+                .Select(x => new
+                {
+                    x.Key.CategoryName,
+                    x.Key.CurrencyId,
+                    Value = x.Sum(y => y.Value)
+                })
+                .ToListAsync();
+
+            var currencyIds = values.Select(x => x.CurrencyId).Distinct().ToList();
+
+            var currencies = await _context.CurrencyRates
+                .Where(x => currencyIds.Contains(x.CurrencyId)
+                    && x.StartDate < lastDay
+                    && !x.BankOfCanada
+                )
+                .GroupBy(x => x.CurrencyId)
+                .Select(x => new
+                {
+                    CurrencyId = x.Key,
+                    x.OrderByDescending(x => x.StartDate).First().Rate
+                })
+                .ToListAsync();
+
+            var currencyMap = currencies.ToDictionary(x => x.CurrencyId, x => x.Rate);
+            foreach (var currencyId in currencyIds)
             {
-                return db.Payments
-                    .Where(x =>
-                        x.Wallet.AccountId == accountId
-                        && x.PaymentDate >= firstDay
-                        && x.PaymentDate < lastDay
-                        && x.Value < 0
-                        && x.Category.Name != "Transfer"
-                        && x.Category.Name != Constants.Category.Taxes
-                    )
-                    .GroupBy(x => x.Category.Name ?? "[No Category]")
-                    .Select(x => new ReportMonthly.Category
-                    {
-                        CategoryName = x.Key,
-                        Value = x.Sum(y =>
-                            y.Value * (y.Wallet.Currency.CurrencyRates
-                                                                    .Where(z =>
-                                                                        z.StartDate < lastDay
-                                                                        && !z.BankOfCanada
-                                                                    )
-                                                                    .OrderByDescending(z => z.StartDate)
-                                                                    .Select(z => (decimal?)z.Rate)
-                                                                    .FirstOrDefault() ?? 1m)
-                        )
-                    })
-                    .ToList();
+                if (!currencyMap.ContainsKey(currencyId))
+                    currencyMap.Add(currencyId, 1);
             }
+
+            return values
+                .GroupBy(x => x.CategoryName)
+                .Select(x => new ReportMonthly.Category
+                {
+                    CategoryName = x.Key,
+                    Value = x.Sum(y => y.Value * currencyMap[y.CurrencyId])
+                })
+                .ToList();
         }
 
-        public ReportMonthly SelectReportMonthly(int accountId, int year, int month)
+        public async Task<ReportMonthly> SelectReportMonthly(int accountId, int year, int month)
         {
             var firstDay = new DateTime(year, month, 1);
             var lastDay = (new DateTime(year, month, 1)).AddMonths(1);
 
-            using (var db = new BudgetDbContext())
+            var payments = await _context.Payments
+                .Include(x => x.Category)
+                .Where(x =>
+                    x.Wallet.AccountId == accountId
+                    && x.PaymentDate >= firstDay
+                    && x.PaymentDate < lastDay
+                )
+                .ToListAsync();
+
+            var wallets = await GetReportMonthlyWallets(firstDay, lastDay, payments);
+            var categories = GetReportMonthlyCategories(payments, wallets);
+
+            return new ReportMonthly
             {
-                var payments = db.Payments
-                    .Include(x => x.Category)
-                    .Where(x =>
-                        x.Wallet.AccountId == accountId
-                        && x.PaymentDate >= firstDay
-                        && x.PaymentDate < lastDay
-                    )
-                    .ToList();
-
-                var wallets = GetReportMonthlyWallets(firstDay, lastDay, payments, db);
-                var categories = GetReportMonthlyCategories(payments, wallets);
-
-                return new ReportMonthly
-                {
-                    Wallets = wallets,
-                    Categories = categories
-                };
-            }
+                Wallets = wallets,
+                Categories = categories
+            };
         }
 
-        private static List<ReportMonthly.Wallet> GetReportMonthlyWallets(DateTime firstDay, DateTime lastDay, List<Payment> payments, BudgetDbContext db)
+        private async Task<List<ReportMonthly.Wallet>> GetReportMonthlyWallets(DateTime firstDay, DateTime lastDay, List<Payment> payments)
         {
             var walletIds = payments.Select(x => x.WalletId).Distinct();
 
-            var wallets = db.Wallets
+            var wallets = await _context.Wallets
                 .Where(x => walletIds.Contains(x.WalletId))
                 .Select(x => new
                 {
@@ -135,9 +174,9 @@ namespace SimpleBudget.Data
                     BeginningRate = x.Currency.CurrencyRates.Where(y => y.StartDate < firstDay && !y.BankOfCanada).OrderByDescending(y => y.StartDate).Select(y => (decimal?)y.Rate).FirstOrDefault() ?? 1,
                     CurrentRate = x.Currency.CurrencyRates.Where(y => y.StartDate < lastDay && !y.BankOfCanada).OrderByDescending(y => y.StartDate).Select(y => (decimal?)y.Rate).FirstOrDefault() ?? 1,
                 })
-                .ToList();
+                .ToListAsync();
 
-            var beginings = db.Payments
+            var beginings = await _context.Payments
                 .Where(x => walletIds.Contains(x.WalletId) && x.PaymentDate < firstDay)
                 .GroupBy(x => x.Wallet)
                 .Select(x => new
@@ -145,7 +184,7 @@ namespace SimpleBudget.Data
                     WalletId = x.Key.WalletId,
                     Beginning = x.Sum(y => y.Value),
                 })
-                .ToList();
+                .ToListAsync();
 
             var result = wallets.Select(x => new ReportMonthly.Wallet
                 {

@@ -1,0 +1,51 @@
+name: Deploy SimpleBudget
+
+on: [workflow_dispatch]
+
+env:
+  AZURE_WEBAPP_NAME: SimpleBudget    # set this to your application's name
+  DOTNET_VERSION: '7.x.x'           # set this to the dot net version to use
+  NODE_VERSION: '18.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@main
+      
+      # Setup NodeJS
+      - name: Setup NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      # Publish React app
+      - name: Publish React app
+        working-directory: ./Code/client
+        run: |
+          npm install
+          npm run build
+      
+      # Setup .NET Core SDK
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }} 
+      
+      # Run dotnet build and publish
+      - name: Run dotnet build and publish
+        working-directory: ./Code/SimpleBudget.API
+        run: |
+          dotnet restore
+          dotnet build --configuration Release
+          dotnet publish -c Release --property:PublishDir='Publish'
+          
+      # Deploy to Azure Web apps
+      - name: 'Run Azure webapp deploy action using publish profile credentials'
+        uses: azure/webapps-deploy@v2
+        with: 
+          app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }} # Define secret variable in repository settings as per action documentation
+          package: './Code/SimpleBudget.API/Publish'

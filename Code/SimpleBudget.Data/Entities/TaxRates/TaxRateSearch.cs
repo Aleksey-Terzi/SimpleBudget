@@ -1,13 +1,16 @@
-﻿namespace SimpleBudget.Data
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace SimpleBudget.Data
 {
     public class TaxRateSearch : SearchHelper<TaxRate>
     {
-        internal TaxRateSearch() { }
+        public TaxRateSearch(BudgetDbContext context) : base(context) { }
 
-        public int SelectLatestYear(int accountId, string name, int maxYear)
+        public async Task<int> SelectLatestYear(int accountId, string name, int maxYear)
         {
-            using (var db = new BudgetDbContext())
-                return db.TaxRates.Where(x => x.AccountId == accountId && x.Name == name && x.PeriodYear <= maxYear).Max(x => x.PeriodYear);
+            return await Context.TaxRates
+                .Where(x => x.AccountId == accountId && x.Name == name && x.PeriodYear <= maxYear)
+                .MaxAsync(x => x.PeriodYear);
         }
     }
 }

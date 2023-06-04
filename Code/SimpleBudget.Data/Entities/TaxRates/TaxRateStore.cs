@@ -2,6 +2,6 @@
 {
     public class TaxRateStore : StoreHelper<TaxRate>
     {
-        internal TaxRateStore() { }
+        public TaxRateStore(BudgetDbContext context) : base(context) { }
     }
 }

@@ -2,6 +2,6 @@
 {
     public class WalletSearch : SearchHelper<Wallet>
     {
-        internal WalletSearch() { }
+        public WalletSearch(BudgetDbContext context) : base(context) { }
     }
 }

@@ -2,6 +2,6 @@
 {
     public class TaxYearSearch : SearchHelper<TaxYear>
     {
-        internal TaxYearSearch() { }
+        public TaxYearSearch(BudgetDbContext context) : base(context) { }
     }
 }

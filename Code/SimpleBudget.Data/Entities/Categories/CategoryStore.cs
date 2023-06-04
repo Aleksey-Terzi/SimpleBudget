@@ -2,6 +2,6 @@
 {
     public class CategoryStore : StoreHelper<Category>
     {
-        internal CategoryStore() { }
+        public CategoryStore(BudgetDbContext context) : base(context) { }
     }
 }

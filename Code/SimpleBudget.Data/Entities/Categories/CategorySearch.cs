@@ -2,6 +2,6 @@
 {
     public class CategorySearch : SearchHelper<Category>
     {
-        internal CategorySearch() { }
+        public CategorySearch(BudgetDbContext context) : base(context) { }
     }
 }

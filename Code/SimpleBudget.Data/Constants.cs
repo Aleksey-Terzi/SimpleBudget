@@ -2,8 +2,6 @@
 {
     public static class Constants
     {
-        public static string BudgetConnectionString { get; set; } = default!;
-
         public static class Tax
         {
             public const string CPP = "CPP";

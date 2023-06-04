@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -10,17 +11,20 @@ namespace SimpleBudget.Data
         public decimal Rate { get; set; }
         public bool BankOfCanada { get; set; }
 
-        public virtual Currency Currency { get; set; } = default!;
+        public Currency Currency { get; set; } = default!;
     }
 
-    public class CurrencyRateConfiguration : EntityTypeConfiguration<CurrencyRate>
+    public class CurrencyRateConfiguration : IEntityTypeConfiguration<CurrencyRate>
     {
-        public CurrencyRateConfiguration()
+        public void Configure(EntityTypeBuilder<CurrencyRate> builder)
         {
-            ToTable("dbo.CurrencyRate");
-            HasKey(x => x.CurrencyRateId);
+            builder.ToTable("CurrencyRate", "dbo");
+            builder.HasKey(x => x.CurrencyRateId);
 
-            HasRequired(a => a.Currency).WithMany(b => b.CurrencyRates).HasForeignKey(a => a.CurrencyId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Currency)
+                .WithMany(b => b.CurrencyRates)
+                .HasForeignKey(a => a.CurrencyId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -9,20 +10,23 @@ namespace SimpleBudget.Data
         public string Code { get; set; } = default!;
         public string ValueFormat { get; set; } = "{0:n2}";
 
-        public virtual Account Account { get; set; } = default!;
+        public Account Account { get; set; } = default!;
 
-        public virtual ICollection<CurrencyRate> CurrencyRates { get; set; } = new HashSet<CurrencyRate>();
-        public virtual ICollection<Wallet> Wallets { get; set; } = new HashSet<Wallet>();
+        public ICollection<CurrencyRate> CurrencyRates { get; set; } = new HashSet<CurrencyRate>();
+        public ICollection<Wallet> Wallets { get; set; } = new HashSet<Wallet>();
     }
 
-    public class CurrencyConfiguration : EntityTypeConfiguration<Currency>
+    public class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
     {
-        public CurrencyConfiguration()
+        public void Configure(EntityTypeBuilder<Currency> builder)
         {
-            ToTable("dbo.Currency");
-            HasKey(x => x.CurrencyId);
+            builder.ToTable("Currency", "dbo");
+            builder.HasKey(x => x.CurrencyId);
 
-            HasRequired(a => a.Account).WithMany(b => b.Currencies).HasForeignKey(a => a.AccountId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Account)
+                .WithMany(b => b.Currencies)
+                .HasForeignKey(a => a.AccountId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SimpleBudget.Data
 {
@@ -10,24 +11,36 @@ namespace SimpleBudget.Data
         public int CurrencyId { get; set; }
         public string Name { get; set; } = default!;
 
-        public virtual Account Account { get; set; } = default!;
-        public virtual Person Person { get; set; } = default!;
-        public virtual Currency Currency { get; set; } = default!;
+        public Account Account { get; set; } = default!;
+        public Person Person { get; set; } = default!;
+        public Currency Currency { get; set; } = default!;
 
-        public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
-        public virtual ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+        public ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
     }
 
-    public class WalletConfiguration : EntityTypeConfiguration<Wallet>
+    public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
     {
-        public WalletConfiguration()
+        public void Configure(EntityTypeBuilder<Wallet> builder)
         {
-            ToTable("dbo.Wallet");
-            HasKey(x => x.WalletId);
+            builder.ToTable("Wallet", "dbo");
+            builder.HasKey(x => x.WalletId);
 
-            HasRequired(a => a.Account).WithMany(b => b.Wallets).HasForeignKey(a => a.AccountId).WillCascadeOnDelete(false);
-            HasRequired(a => a.Currency).WithMany(b => b.Wallets).HasForeignKey(a => a.CurrencyId).WillCascadeOnDelete(false);
-            HasOptional(a => a.Person).WithMany(b => b.Wallets).HasForeignKey(a => a.PersonId).WillCascadeOnDelete(false);
+            builder.HasOne(a => a.Account)
+                .WithMany(b => b.Wallets)
+                .HasForeignKey(a => a.AccountId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(a => a.Currency)
+                .WithMany(b => b.Wallets)
+                .HasForeignKey(a => a.CurrencyId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(a => a.Person)
+                .WithMany(b => b.Wallets)
+                .HasForeignKey(a => a.PersonId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

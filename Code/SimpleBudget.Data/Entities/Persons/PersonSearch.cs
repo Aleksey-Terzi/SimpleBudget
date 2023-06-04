@@ -2,6 +2,6 @@
 {
     public class PersonSearch : SearchHelper<Person>
     {
-        internal PersonSearch() { }
+        public PersonSearch(BudgetDbContext context) : base(context) { }
     }
 }

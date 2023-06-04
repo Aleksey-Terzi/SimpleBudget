@@ -2,6 +2,6 @@
 {
     public class AccountSearch : SearchHelper<Account>
     {
-        internal AccountSearch() { }
+        public AccountSearch(BudgetDbContext context) : base(context) { }
     }
 }

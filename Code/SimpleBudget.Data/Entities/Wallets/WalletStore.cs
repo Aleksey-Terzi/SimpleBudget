@@ -2,6 +2,6 @@
 {
     public class WalletStore : StoreHelper<Wallet>
     {
-        internal WalletStore() { }
+        public WalletStore(BudgetDbContext context) : base(context) { }
     }
 }

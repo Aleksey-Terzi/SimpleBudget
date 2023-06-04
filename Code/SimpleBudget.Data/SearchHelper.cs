@@ -1,71 +1,76 @@
-﻿using System.Data.Entity;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace SimpleBudget.Data
 {
     public abstract class SearchHelper<TEntity> where TEntity : class
     {
-        public List<TEntity> Select(
+        private readonly BudgetDbContext _context;
+
+        protected BudgetDbContext Context => _context;
+
+        protected SearchHelper(BudgetDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<TEntity>> Select(
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? process = null,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            return ExecuteQuery(query => BuildQuery(query, x => x, filter, includes, process).ToList());
+            return await ExecuteQuery(async query => await BuildQuery(query, x => x, filter, includes, process).ToListAsync());
         }
 
-        public TEntity? SelectFirst(
+        public async Task<TEntity?> SelectFirst(
             Expression<Func<TEntity, bool>> filter,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            return ExecuteQuery(query => BuildQuery(query, x => x, filter, includes, null).FirstOrDefault());
+            return await ExecuteQuery(async query => await BuildQuery(query, x => x, filter, includes, null).FirstOrDefaultAsync());
         }
 
-        public List<T> Bind<T>(
+        public async Task<List<T>> Bind<T>(
             Expression<Func<TEntity, T>> binder,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<T>, IQueryable<T>>? process = null)
         {
-            return ExecuteQuery(query => BuildQuery(query, binder, filter, null, process).ToList());
+            return await ExecuteQuery(async query => await BuildQuery(query, binder, filter, null, process).ToListAsync());
         }
 
-        public T? BindFirst<T>(
+        public async Task<T?> BindFirst<T>(
             Expression<Func<TEntity, T>> binder,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<T>, IQueryable<T>>? process = null)
         {
-            return ExecuteQuery(query => BuildQuery(query, binder, filter, null, process).FirstOrDefault());
+            return await ExecuteQuery(async query => await BuildQuery(query, binder, filter, null, process).FirstOrDefaultAsync());
         }
 
-        public int Count(Expression<Func<TEntity, bool>> filter)
+        public async Task<int> Count(Expression<Func<TEntity, bool>> filter)
         {
-            return Count(query => filter != null ? query.Where(filter) : query);
+            return await Count(query => filter != null ? query.Where(filter) : query);
         }
 
-        protected int Count(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
+        protected async Task<int> Count(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
         {
-            return ExecuteQuery(query => filter(query).Count());
+            return await ExecuteQuery(async query => await filter(query).CountAsync());
         }
 
-        public bool Exists(Expression<Func<TEntity, bool>> filter)
+        public async Task<bool> Exists(Expression<Func<TEntity, bool>> filter)
         {
-            return Exists(query => filter != null ? query.Where(filter) : query);
+            return await Exists(query => filter != null ? query.Where(filter) : query);
         }
 
-        protected bool Exists(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
+        protected async Task<bool> Exists(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
         {
-            return ExecuteQuery(query => filter(query).Any());
+            return await ExecuteQuery(async query => await filter(query).AnyAsync());
         }
 
-        protected TResult ExecuteQuery<TResult>(Func<IQueryable<TEntity>, TResult> func)
+        protected async Task<TResult> ExecuteQuery<TResult>(Func<IQueryable<TEntity>, Task<TResult>> func)
         {
-            using (var db = new BudgetDbContext())
-            {
-                db.Configuration.ProxyCreationEnabled = false;
+            var query = _context.Set<TEntity>().AsQueryable().AsNoTracking();
 
-                var query = db.Set<TEntity>().AsQueryable().AsNoTracking();
-
-                return func(query);
-            }
+            return await func(query);
         }
 
         protected IQueryable<T> BuildQuery<T>(

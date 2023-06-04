@@ -2,6 +2,6 @@
 {
     public class CompanyStore : StoreHelper<Company>
     {
-        internal CompanyStore() { }
+        public CompanyStore(BudgetDbContext context) : base(context) { }
     }
 }

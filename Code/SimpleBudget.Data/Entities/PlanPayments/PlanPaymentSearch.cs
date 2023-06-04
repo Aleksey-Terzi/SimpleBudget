@@ -1,27 +1,24 @@
 ﻿using System.Linq.Expressions;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace SimpleBudget.Data
 {
     public class PlanPaymentSearch : SearchHelper<PlanPayment>
     {
-        internal PlanPaymentSearch() { }
+        public PlanPaymentSearch(BudgetDbContext context) : base(context) { }
 
-        public List<Payment> GetPayments(int accountId, DateTime start, DateTime end)
+        public async Task<List<Payment>> GetPayments(int accountId, DateTime start, DateTime end)
         {
-            List<PlanPayment> planPayments;
-
-            using (var db = new BudgetDbContext())
-            {
-                planPayments = db.PlanPayments
-                    .Where(
-                        x =>
-                            x.Wallet.AccountId == accountId
-                            && x.IsActive
-                            && x.PaymentStartDate < end
-                            && (x.PaymentEndDate == null || x.PaymentEndDate >= start)
-                    )
-                    .ToList();
-            }
+            var planPayments = await Context.PlanPayments
+                .Where(
+                    x =>
+                        x.Wallet.AccountId == accountId
+                        && x.IsActive
+                        && x.PaymentStartDate < end
+                        && (x.PaymentEndDate == null || x.PaymentEndDate >= start)
+                )
+                .ToListAsync();
 
             var payments = new List<Payment>();
 
@@ -45,47 +42,46 @@ namespace SimpleBudget.Data
             return payments;
         }
 
-        public int GetRowNumber(int planPaymentId, PlanPaymentFilter filter)
+        public async Task<int> GetRowNumber(int planPaymentId, PlanPaymentFilter filter)
         {
-            using (var db = new BudgetDbContext())
-            {
-                var planPayment = db.PlanPayments.AsNoTracking().FirstOrDefault(x => x.PlanPaymentId == planPaymentId);
+            var planPayment = await Context.PlanPayments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PlanPaymentId == planPaymentId);
 
-                if (planPayment == null)
-                    return -1;
+            if (planPayment == null)
+                return -1;
 
-                var query = FilterQuery(filter, db.PlanPayments);
+            var query = FilterQuery(filter, Context.PlanPayments);
 
-                var count = query.Where(x =>
-                    x.PaymentStartDate >= planPayment.PaymentStartDate
-                    && (
-                        x.PaymentStartDate > planPayment.PaymentStartDate
-                        || x.PaymentStartDate == planPayment.PaymentStartDate && x.PlanPaymentId > planPayment.PlanPaymentId
-                    )
-                ).Count();
+            var count = await query.Where(x =>
+                x.PaymentStartDate >= planPayment.PaymentStartDate
+                && (
+                    x.PaymentStartDate > planPayment.PaymentStartDate
+                    || x.PaymentStartDate == planPayment.PaymentStartDate && x.PlanPaymentId > planPayment.PlanPaymentId
+                )
+            ).CountAsync();
 
-                return count + 1;
-            }
+            return count + 1;
         }
 
-        public int Count(PlanPaymentFilter filter)
+        public async Task<int> Count(PlanPaymentFilter filter)
         {
-            return Count((IQueryable<PlanPayment> query) => FilterQuery(filter, query));
+            return await Count((IQueryable<PlanPayment> query) => FilterQuery(filter, query));
         }
 
-        public List<T> Bind<T>(
+        public async Task<List<T>> Bind<T>(
             Expression<Func<PlanPayment, T>> binder,
             PlanPaymentFilter filter,
             Func<IQueryable<T>, IQueryable<T>>? process)
         {
-            return ExecuteQuery(
-                query => BuildQuery(
+            return await ExecuteQuery(
+                async query => await BuildQuery(
                     query,
                     (IQueryable<PlanPayment> q) => q.Select(binder),
                     (IQueryable<PlanPayment> q) => FilterQuery(filter, q),
                     q => q,
                     process
-                ).ToList()
+                ).ToListAsync()
             );
         }
 

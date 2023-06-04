@@ -2,6 +2,6 @@
 {
     public class PaymentStore : StoreHelper<Payment>
     {
-        internal PaymentStore() { }
+        public PaymentStore(BudgetDbContext context) : base(context) { }
     }
 }
