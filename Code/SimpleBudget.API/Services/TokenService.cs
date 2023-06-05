@@ -29,9 +29,8 @@ namespace SimpleBudget.API
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, user.Name),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, "Role1")
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Name)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));

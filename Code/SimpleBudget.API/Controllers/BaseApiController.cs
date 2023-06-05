@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace SimpleBudget.API.Controllers
 {
@@ -6,7 +8,24 @@ namespace SimpleBudget.API.Controllers
     [Route("api/[controller]")]
     public class BaseApiController : ControllerBase
     {
-        public const int AccountId = 1;
-        public const int UserId = 1;
+        public int AccountId => 1;
+
+        private int? _userID;
+        public int UserId
+        {
+            get
+            {
+                if (_userID == null)
+                {
+                    var claim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                    if (claim == null)
+                        throw new ArgumentNullException("NameIdentifier");
+
+                    _userID = int.Parse(claim.Value);
+                }
+
+                return _userID.Value;
+            }
+        }
     }
 }
