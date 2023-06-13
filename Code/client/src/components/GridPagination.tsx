@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
 import { PaginationData } from "../models/pagination";
 
-interface Props {
-    filterParams: string;
-    paginationData: PaginationData;
+export interface PageClickEvent {
+    page: number;
 }
 
-export default function GridPagination({ filterParams, paginationData }: Props) {
+interface Props {
+    paginationData: PaginationData;
+    disabled?: boolean;
+    filterParams?: string;
+    pageClick?: (e: PageClickEvent) => void;
+}
+
+export default function GridPagination({ paginationData, disabled, filterParams, pageClick }: Props) {
     const startItem = (paginationData.page - 1) * paginationData.pageSize + 1;
     const section = Math.floor((paginationData.page - 1) / paginationData.pagesPerSection) + 1;
 
@@ -34,27 +40,42 @@ export default function GridPagination({ filterParams, paginationData }: Props) 
 
         pages.push((
             <li key={i} className={itemClass} >
-                {i === paginationData.page ? (
+                {i === paginationData.page || disabled ? (
                     <span className="page-link">
                         {i}
                     </span>
-                ) : (
-                    <Link className="page-link" to={`?page=${i}${filterParams}`}>
-                        {i}
-                    </Link>
-                )}
+                ) : pageClick ? (
+                        <button className="page-link" onClick={() => pageClick({ page: i })}>
+                            {i}
+                        </button>
+                    ) : (
+                        <Link className="page-link" to={`?page=${i}${filterParams}`}>
+                            {i}
+                        </Link>
+                    )
+                }
             </li >
         ));
     }
 
     return (
         <div className="row">
-            <div className="col-md-9">
+            <div className="col-md-6">
                 <nav aria-label="...">
                     <ul className="pagination">
                         {section > 1 && (
                             <li className="page-item">
-                                <Link className="page-link" to={`?page=${startPageInSection - 1}${filterParams}`}>...</Link>
+                                {disabled ? (
+                                    <span className="page-link">
+                                        ...
+                                    </span>
+                                ) : pageClick ? (
+                                    <button className="page-link" onClick={() => pageClick({ page: startPageInSection - 1 })}>
+                                        ...
+                                    </button>
+                                ) : (
+                                    <Link className="page-link" to={`?page=${startPageInSection - 1}${filterParams}`}>...</Link>
+                                )}
                             </li>
                         )}
 
@@ -62,15 +83,27 @@ export default function GridPagination({ filterParams, paginationData }: Props) 
 
                         {section < sectionCount && (
                             <li className="page-item">
-                                <Link className="page-link" to={`?page=${endPageInSection + 1}${filterParams}`}>...</Link>
+                                {disabled ? (
+                                    <span className="page-link">
+                                        ...
+                                    </span>
+                                ): pageClick ? (
+                                    <button className="page-link" onClick={() => pageClick({ page: endPageInSection + 1 })}>
+                                        ...
+                                    </button>
+                                ): (
+                                    <Link className="page-link" to={`?page=${endPageInSection + 1}${filterParams}`}>...</Link>
+                                )}
                             </li>
                         )}
                     </ul>
                 </nav>
             </div>
-            <div className="col-md-3 text-end">
+            <div className="col-md-6 text-end">
                 <strong>
-                    Page {paginationData.page} of {paginationData.totalPages} - Items {startItem} to {endItem} of {paginationData.totalItems}
+                    {paginationData.totalItems > 0 && (
+                        <>Page {paginationData.page} of {paginationData.totalPages} - Items {startItem} to {endItem} of {paginationData.totalItems}</>
+                    )}
                 </strong>
             </div>
         </div>

@@ -7,5 +7,6 @@
         public int TotalItems { get; set; }
         public int TotalPages { get; set; }
         public int PagesPerSection { get; set; }
+        public int? Id { get; set; }
     }
 }

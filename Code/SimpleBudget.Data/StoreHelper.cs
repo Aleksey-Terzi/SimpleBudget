@@ -6,6 +6,8 @@ namespace SimpleBudget.Data
     {
         private readonly BudgetDbContext _context;
 
+        protected BudgetDbContext Context => _context;
+
         protected StoreHelper(BudgetDbContext context)
         {
             _context = context;

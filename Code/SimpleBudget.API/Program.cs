@@ -108,6 +108,8 @@ builder.Services.AddScoped<TaxService>();
 builder.Services.AddScoped<UnpaidTaxService>();
 builder.Services.AddScoped<SummaryReportService>();
 builder.Services.AddScoped<MonthlyReportService>();
+builder.Services.AddScoped<CurrencyService>();
+builder.Services.AddScoped<CurrencyRateService>();
 
 builder.Services.AddCors();
 

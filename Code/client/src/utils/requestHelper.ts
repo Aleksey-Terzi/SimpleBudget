@@ -2,6 +2,8 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { PaginatedResponse } from "../models/pagination";
 import { CategoryEditModel } from "../routes/categories/models/categoryEditModel";
 import { CompanyEditModel } from "../routes/companies/models/companyEditModel";
+import { CurrencyEditModel } from "../routes/currencies/models/currencyEditModel";
+import { CurrencyRateEditModel } from "../routes/currencies/models/currencyRateEditModel";
 import { PaymentFilterModel } from "../routes/payments/models/paymentFilterModel";
 import { PaymentModel } from "../routes/payments/models/paymentModel";
 import { PlanPaymentFilterModel } from "../routes/plans/models/planPaymentFilterModel";
@@ -26,7 +28,7 @@ axios.interceptors.request.use(config => {
 
 axios.interceptors.response.use(async response => {
         if (process.env.NODE_ENV === "development") {
-            // await (new Promise(resolve => setTimeout(resolve, 1000)));
+            // await (new Promise(resolve => setTimeout(resolve, 2000)));
         }
 
         const pagination = response.headers["pagination"];
@@ -120,6 +122,19 @@ const Wallets = {
     getSelectors: () => requests.get("wallets/selectors")
 }
 
+const Currencies = {
+    getCurrencies: () => requests.get("currencies"),
+    getCurrency: (id: number) => requests.get(`currencies/${id}`),
+    createCurrency: (model: CurrencyEditModel) => requests.post("currencies", model),
+    updateCurrency: (id: number, model: CurrencyEditModel) => requests.put(`currencies/${id}`, model),
+    deleteCurrency: (id: number) => requests.delete(`currencies/${id}`),
+    currencyExists: (code: string, excludeId?: number) => requests.get(`currencies/exists?code=${encodeURIComponent(code)}&excludeId=${excludeId || ""}`),
+    getRates: (currencyId: number, rateId?: number, page?: number) => requests.get(`currencies/${currencyId}/rates?&rateId=${rateId || ""}&page=${page || ""}`),
+    createRate: (currencyId: number, model: CurrencyRateEditModel) => requests.post(`currencies/${currencyId}/rates`, model),
+    updateRate: (currencyId: number, rateId: number, model: CurrencyRateEditModel) => requests.put(`currencies/${currencyId}/rates/${rateId}`, model),
+    deleteRate: (currencyId: number, rateId: number) => requests.delete(`currencies/${currencyId}/rates/${rateId}`)
+}
+
 const requestHelper = {
     Selectors,
     Payments,
@@ -129,7 +144,8 @@ const requestHelper = {
     Taxes,
     Categories,
     Companies,
-    Wallets
+    Wallets,
+    Currencies
 }
 
 export default requestHelper

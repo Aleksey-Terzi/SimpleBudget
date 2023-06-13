@@ -4,6 +4,7 @@ export interface PaginationData {
     totalItems: number;
     totalPages: number;
     pagesPerSection: number;
+    id?: number;
 }
 
 export class PaginatedResponse<T> {

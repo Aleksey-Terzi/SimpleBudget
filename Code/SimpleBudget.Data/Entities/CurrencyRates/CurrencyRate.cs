@@ -21,6 +21,8 @@ namespace SimpleBudget.Data
             builder.ToTable("CurrencyRate", "dbo");
             builder.HasKey(x => x.CurrencyRateId);
 
+            builder.Property(nameof(CurrencyRate.Rate)).HasPrecision(18, 4);
+
             builder.HasOne(a => a.Currency)
                 .WithMany(b => b.CurrencyRates)
                 .HasForeignKey(a => a.CurrencyId)

@@ -1,13 +1,16 @@
 import { Link, NavLink } from "react-router-dom";
+import UserModel from "../models/userModel";
 import paymentFilterHelper from "../routes/payments/utils/paymentFilterHelper";
 import planPaymentFilterHelper from "../routes/plans/utils/planPaymentFilterHelper";
 import { useAppSelector } from "../utils/storeHelper";
+import userHelper from "../utils/userHelper";
 
 export default function Header() {
     const { filter: paymentFilter } = useAppSelector(state => state.payment);
     const paymentsUrl = paymentFilterHelper.getPaymentsUrl(paymentFilter);
     const { filter: planPaymentFilter } = useAppSelector(state => state.planPayment);
     const planPaymentsUrl = planPaymentFilterHelper.getPlanPaymentsUrl(planPaymentFilter);
+    const user = userHelper.getUser();
 
     return (
         <header>
@@ -39,6 +42,12 @@ export default function Header() {
                                 <NavLink className="nav-link" to={planPaymentsUrl}>Plans</NavLink>
                             </li>
                         </ul>
+                    </div>
+                    <div className="float-end">
+                        <b className="me-3">{user?.username}</b>
+                        <Link to="/login">
+                            Logout
+                        </Link>
                     </div>
                 </div>
             </nav>

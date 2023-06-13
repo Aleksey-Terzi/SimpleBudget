@@ -22,6 +22,8 @@ namespace SimpleBudget.Data
             builder.ToTable("TaxRate", "dbo");
             builder.HasKey(x => x.TaxRateId);
 
+            builder.Property(nameof(TaxRate.Rate)).HasPrecision(18, 4);
+
             builder.HasOne(a => a.Account)
                 .WithMany(b => b.TaxRates)
                 .HasForeignKey(a => a.AccountId)
