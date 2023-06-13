@@ -1,5 +1,4 @@
 import { Link, NavLink } from "react-router-dom";
-import UserModel from "../models/userModel";
 import paymentFilterHelper from "../routes/payments/utils/paymentFilterHelper";
 import planPaymentFilterHelper from "../routes/plans/utils/planPaymentFilterHelper";
 import { useAppSelector } from "../utils/storeHelper";

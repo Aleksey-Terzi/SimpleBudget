@@ -129,7 +129,7 @@ const Currencies = {
     updateCurrency: (id: number, model: CurrencyEditModel) => requests.put(`currencies/${id}`, model),
     deleteCurrency: (id: number) => requests.delete(`currencies/${id}`),
     currencyExists: (code: string, excludeId?: number) => requests.get(`currencies/exists?code=${encodeURIComponent(code)}&excludeId=${excludeId || ""}`),
-    getRates: (currencyId: number, rateId?: number, page?: number) => requests.get(`currencies/${currencyId}/rates?&rateId=${rateId || ""}&page=${page || ""}`),
+    getRates: (currencyId: number, page?: number) => requests.get(`currencies/${currencyId}/rates?page=${page || ""}`),
     createRate: (currencyId: number, model: CurrencyRateEditModel) => requests.post(`currencies/${currencyId}/rates`, model),
     updateRate: (currencyId: number, rateId: number, model: CurrencyRateEditModel) => requests.put(`currencies/${currencyId}/rates/${rateId}`, model),
     deleteRate: (currencyId: number, rateId: number) => requests.delete(`currencies/${currencyId}/rates/${rateId}`)

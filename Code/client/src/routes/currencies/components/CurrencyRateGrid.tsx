@@ -43,13 +43,9 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
     });
 
     useEffect(() => {
-        loadData();
-    }, [currencyId]);
-
-    function loadData(page?: number) {
         setLoading(true);
 
-        requestHelper.Currencies.getRates(currencyId, selectedId, page)
+        requestHelper.Currencies.getRates(currencyId)
             .then(r => {
                 setItems(r.items);
                 setPaginationData(r.paginationData);
@@ -61,7 +57,7 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
             .finally(() => {
                 setLoading(false);
             });
-    }
+    }, [currencyId]);
 
     function onAddRateClick() {
         reset();
@@ -81,7 +77,20 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
     }
 
     function onPageClick(e: PageClickEvent) {
-        loadData(e.page);
+        setLoading(true);
+
+        requestHelper.Currencies.getRates(currencyId, e.page)
+            .then(r => {
+                setItems(r.items);
+                setPaginationData(r.paginationData);
+                setSelectedId(undefined);
+            })
+            .catch(e => {
+                setError(responseHelper.getErrorMessage(e));
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }
 
     function onEditClick(e: any, id: number) {
