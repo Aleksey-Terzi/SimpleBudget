@@ -25,6 +25,8 @@ import WalletDelete from "./wallets/WalletDelete";
 import Currencies from "./currencies/Currencies";
 import CurrencyEdit from "./currencies/CurrencyEdit";
 import CurrencyDelete from "./currencies/CurrencyDelete";
+import TaxSettings from "./taxSettings/TaxSettings";
+import TaxSettingEdit from "./taxSettings/TaxSettingEdit";
 
 export const router = createBrowserRouter([
     {
@@ -67,6 +69,9 @@ export const router = createBrowserRouter([
             { path: "/currencies/add", element: <CurrencyEdit /> },
             { path: "/currencies/:id", element: <CurrencyEdit /> },
             { path: "/currencies/:id/delete", element: <CurrencyDelete /> },
+
+            { path: "/taxsettings", element: <TaxSettings /> },
+            { path: "/taxsettings/:year", element: <TaxSettingEdit /> },
         ]
     },
     {

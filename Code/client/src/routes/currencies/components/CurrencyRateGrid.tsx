@@ -182,7 +182,7 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
                 </div>
 
                 <Form noValidate autoComplete="off" onSubmit={handleSubmit(onSave)}>
-                    <table className="table table-striped payments">
+                    <table className="table table-striped">
                         <thead>
                             <tr>
                                 <th className="w-25">Start Date</th>

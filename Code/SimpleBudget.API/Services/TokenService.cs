@@ -40,7 +40,7 @@ namespace SimpleBudget.API
                 issuer: null,
                 audience: null,
                 claims: claims,
-                expires: DateTime.Now.AddDays(7),
+                expires: DateTime.Now.AddHours(_jwt.ExpiresInHours),
                 signingCredentials: credentials
             );
 

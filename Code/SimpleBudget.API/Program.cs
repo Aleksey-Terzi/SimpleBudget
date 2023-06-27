@@ -69,6 +69,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<IdentityService>();
+
 builder.Services.AddScoped<AccountSearch>();
 builder.Services.AddScoped<AccountStore>();
 builder.Services.AddScoped<CategorySearch>();
@@ -105,6 +107,7 @@ builder.Services.AddScoped<PlanPaymentSearchService>();
 builder.Services.AddScoped<PlanPaymentUpdateService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<TaxService>();
+builder.Services.AddScoped<TaxSettingService>();
 builder.Services.AddScoped<UnpaidTaxService>();
 builder.Services.AddScoped<SummaryReportService>();
 builder.Services.AddScoped<MonthlyReportService>();
@@ -133,6 +136,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<IdentityMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

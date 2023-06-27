@@ -16,7 +16,7 @@ const numberHelper = {
     parseNumber: (s?: string) => {
         if (!s || s.length === 0) return undefined;
 
-        const trimmedValue = s.replace(",", "");
+        const trimmedValue = s.replaceAll(",", "");
 
         return Number(trimmedValue);
     }

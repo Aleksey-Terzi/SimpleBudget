@@ -9,6 +9,7 @@ import { PaymentModel } from "../routes/payments/models/paymentModel";
 import { PlanPaymentFilterModel } from "../routes/plans/models/planPaymentFilterModel";
 import { PlanPaymentModel } from "../routes/plans/models/planPaymentModel";
 import { router } from "../routes/Routes";
+import { TaxSettingEditModel } from "../routes/taxSettings/models/taxSettingEditModel";
 import { WalletEditModel } from "../routes/wallets/models/walletEditModel";
 import paramHelper from "./paramHelper";
 import userHelper from "./userHelper";
@@ -28,7 +29,7 @@ axios.interceptors.request.use(config => {
 
 axios.interceptors.response.use(async response => {
         if (process.env.NODE_ENV === "development") {
-            // await (new Promise(resolve => setTimeout(resolve, 2000)));
+            // await (new Promise(resolve => setTimeout(resolve, 500)));
         }
 
         const pagination = response.headers["pagination"];
@@ -135,6 +136,13 @@ const Currencies = {
     deleteRate: (currencyId: number, rateId: number) => requests.delete(`currencies/${currencyId}/rates/${rateId}`)
 }
 
+const TaxSettings = {
+    getTaxSettings: () => requests.get("taxsettings"),
+    getTaxSetting: (year: number) => requests.get(`taxsettings/${year}`),
+    updateTaxSetting: (year: number, model: TaxSettingEditModel) => requests.put(`taxsettings/${year}`, model),
+    deleteTaxSetting: (year: number) => requests.delete(`taxsettings/${year}`)
+}
+
 const requestHelper = {
     Selectors,
     Payments,
@@ -145,7 +153,8 @@ const requestHelper = {
     Categories,
     Companies,
     Wallets,
-    Currencies
+    Currencies,
+    TaxSettings
 }
 
 export default requestHelper
