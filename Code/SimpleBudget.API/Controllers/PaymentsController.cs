@@ -23,7 +23,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet]
         public async Task<ActionResult<PaymentGridItemModel[]>> SearchPayments([FromQuery] PaymentFilterModel input)
         {
-            var (items, pagination) = await _searchService.Search(AccountId, input);
+            var (items, pagination) = await _searchService.Search(input);
 
             Response.AddPaginationHeader(pagination);
 
@@ -33,7 +33,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PaymentEditItemModel>> GetPayment(int id)
         {
-            var payment = await _searchService.GetPayment(AccountId, id);
+            var payment = await _searchService.GetPayment(id);
 
             if (payment == null)
                 return BadRequest(new ProblemDetails { Title = "Payment Not Found" });
@@ -44,13 +44,13 @@ namespace SimpleBudget.API.Controllers
         [HttpPost]
         public async Task<ActionResult<int>> CreatePayment(PaymentEditItemModel model)
         {
-            return await _updateService.CreatePayment(AccountId, UserId, model);
+            return await _updateService.CreatePayment(model);
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdatePayment([FromRoute] int id, PaymentEditItemModel model)
         {
-            await _updateService.UpdatePayment(AccountId, UserId, id, model);
+            await _updateService.UpdatePayment(id, model);
 
             return Ok();
         }
@@ -58,7 +58,7 @@ namespace SimpleBudget.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePayment([FromRoute] int id)
         {
-            await _updateService.DeletePayment(AccountId, id);
+            await _updateService.DeletePayment(id);
 
             return Ok();
         }

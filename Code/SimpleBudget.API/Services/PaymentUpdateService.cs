@@ -5,6 +5,7 @@ namespace SimpleBudget.API
 {
     public class PaymentUpdateService
     {
+        private readonly IdentityService _identity;
         private readonly CategoryService _categoryService;
         private readonly CompanyService _companyService;
         private readonly PaymentSearch _paymentSearch;
@@ -13,6 +14,7 @@ namespace SimpleBudget.API
         private readonly PersonSearch _personSearch;
 
         public PaymentUpdateService(
+            IdentityService identity,
             CategoryService categoryService,
             CompanyService companyService,
             PaymentSearch paymentSearch,
@@ -21,6 +23,7 @@ namespace SimpleBudget.API
             PersonSearch personSearch
             )
         {
+            _identity = identity;
             _categoryService = categoryService;
             _companyService = companyService;
             _paymentSearch = paymentSearch;
@@ -29,9 +32,9 @@ namespace SimpleBudget.API
             _personSearch = personSearch;
         }
 
-        public async Task DeletePayment(int accountId, int paymentId)
+        public async Task DeletePayment(int paymentId)
         {
-            var payment = await _paymentSearch.SelectFirst(x => x.Wallet.AccountId == accountId && x.PaymentId == paymentId);
+            var payment = await _paymentSearch.SelectFirst(x => x.Wallet.AccountId == _identity.AccountId && x.PaymentId == paymentId);
             if (payment == null)
                 throw new ArgumentException($"Payment is not found: {paymentId}");
 
@@ -43,61 +46,61 @@ namespace SimpleBudget.API
                 await _paymentStore.Delete(child);
         }
 
-        public async Task UpdatePayment(int accountId, int userId, int paymentId, PaymentEditItemModel model)
+        public async Task UpdatePayment(int paymentId, PaymentEditItemModel model)
         {
-            var payment = await _paymentSearch.SelectFirst(x => x.PaymentId == paymentId && x.Wallet.AccountId == accountId);
+            var payment = await _paymentSearch.SelectFirst(x => x.PaymentId == paymentId && x.Wallet.AccountId == _identity.AccountId);
             if (payment == null)
                 throw new ArgumentException($"Payment is not found: {paymentId}");
 
-            await MapModel(accountId, userId, model, payment);
+            await MapModel(model, payment);
 
             await _paymentStore.Update(payment);
 
             var child = await _paymentSearch.SelectFirst(x => x.ParentPaymentId == paymentId);
 
             if (model.PaymentType == "Transfer")
-                await UpdateTransfer(accountId, userId, payment, child, model);
+                await UpdateTransfer(payment, child, model);
             else if (child != null)
                 await _paymentStore.Delete(child);
         }
 
-        public async Task<int> CreatePayment(int accountId, int userId, PaymentEditItemModel model)
+        public async Task<int> CreatePayment(PaymentEditItemModel model)
         {
             var payment = new Payment
             {
                 CreatedOn = DateTime.UtcNow,
-                CreatedByUserId = userId,
+                CreatedByUserId = _identity.UserId,
             };
 
-            await MapModel(accountId, userId, model, payment);
+            await MapModel(model, payment);
 
             await _paymentStore.Insert(payment);
 
             if (model.PaymentType == "Transfer")
-                await UpdateTransfer(accountId, userId, payment, null, model);
+                await UpdateTransfer(payment, null, model);
 
             return payment.PaymentId;
         }
 
-        private async Task MapModel(int accountId, int userId, PaymentEditItemModel model, Payment entity)
+        private async Task MapModel(PaymentEditItemModel model, Payment entity)
         {
-            var wallet = await _walletSearch.SelectFirst(x => x.AccountId == accountId && x.Name == model.Wallet);
+            var wallet = await _walletSearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Name == model.Wallet);
             if (wallet == null)
                 throw new ArgumentException($"Wallet is not found: {model.Wallet}");
 
             var category = model.PaymentType == "Transfer" ? "Transfer" : model.Category;
 
             entity.PaymentDate = DateHelper.ToServer(model.Date)!.Value;
-            entity.CompanyId = await _companyService.GetOrCreateCompanyId(accountId, model.Company);
-            entity.CategoryId = await _categoryService.GetOrCreateCategoryId(accountId, category);
+            entity.CompanyId = await _companyService.GetOrCreateCompanyId(_identity.AccountId, model.Company);
+            entity.CategoryId = await _categoryService.GetOrCreateCategoryId(_identity.AccountId, category);
             entity.WalletId = wallet.WalletId;
             entity.Description = !string.IsNullOrEmpty(model.Description) ? model.Description : null;
             entity.Value = model.Value;
             entity.ModifiedOn = DateTime.UtcNow;
-            entity.ModifiedByUserId = userId;
+            entity.ModifiedByUserId = _identity.UserId;
 
             entity.PersonId = !string.IsNullOrEmpty(model.Person)
-                ? (await _personSearch.SelectFirst(x => x.Name == model.Person && x.AccountId == accountId))?.PersonId
+                ? (await _personSearch.SelectFirst(x => x.Name == model.Person && x.AccountId == _identity.AccountId))?.PersonId
                 : null;
 
             if (model.PaymentType == "Expenses" || model.PaymentType == "Transfer")
@@ -110,19 +113,19 @@ namespace SimpleBudget.API
                 : null;
         }
 
-        private async Task UpdateTransfer(int accountId, int userId, Payment payment, Payment? child, PaymentEditItemModel model)
+        private async Task UpdateTransfer(Payment payment, Payment? child, PaymentEditItemModel model)
         {
             if (child == null)
             {
                 child = new Payment
                 {
                     CreatedOn = DateTime.UtcNow,
-                    CreatedByUserId = userId,
+                    CreatedByUserId = _identity.UserId,
                     ParentPaymentId = payment.PaymentId
                 };
             }
 
-            var wallet = await _walletSearch.SelectFirst(x => x.AccountId == accountId && x.Name == model.WalletTo);
+            var wallet = await _walletSearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Name == model.WalletTo);
             if (wallet == null)
                 throw new ArgumentException($"Wallet is not found: {model.WalletTo}");
 
@@ -136,7 +139,7 @@ namespace SimpleBudget.API
             child.Description = payment.Description;
             child.Value = model.ValueTo.Value;
             child.ModifiedOn = DateTime.UtcNow;
-            child.ModifiedByUserId = userId;
+            child.ModifiedByUserId = _identity.UserId;
 
             if (child.PaymentId == 0)
                 await _paymentStore.Insert(child);

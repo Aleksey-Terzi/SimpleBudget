@@ -23,13 +23,13 @@ namespace SimpleBudget.API.Controllers
         [HttpGet]
         public async Task<ActionResult<CurrencyGridModel[]>> GetCurrencies()
         {
-            return await _currencyService.GetCurrenciesAsync(AccountId);
+            return await _currencyService.GetCurrenciesAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CurrencyEditModel>> GetCurrency(int id)
         {
-            var model = await _currencyService.GetCurrencyAsync(AccountId, id);
+            var model = await _currencyService.GetCurrencyAsync(id);
             if (model == null)
                 return BadRequest(new ProblemDetails { Title = "Currency doesn't exist" });
 
@@ -39,13 +39,13 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("exists")]
         public async Task<ActionResult<bool>> CurrencyExists(string code, int? excludeId)
         {
-            return await _currencyService.CurrencyExistsAsync(AccountId, code, excludeId);
+            return await _currencyService.CurrencyExistsAsync(code, excludeId);
         }
 
         [HttpPost]
         public async Task<ActionResult<int>> CreateCurrency(CurrencyEditModel model)
         {
-            var currencyId = await _currencyService.CreateCurrencyAsync(AccountId, model);
+            var currencyId = await _currencyService.CreateCurrencyAsync(model);
             if (currencyId == null)
                 return BadRequest(new ProblemDetails { Title = "The currency with such a code already exists" });
 
@@ -55,7 +55,7 @@ namespace SimpleBudget.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateCurrency(int id, CurrencyEditModel model)
         {
-            var result = await _currencyService.UpdateCurrencyAsync(AccountId, id, model);
+            var result = await _currencyService.UpdateCurrencyAsync(id, model);
 
             switch (result)
             {
@@ -71,7 +71,7 @@ namespace SimpleBudget.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCurrency(int id)
         {
-            var result = await _currencyService.DeleteCurrencyAsync(AccountId, id);
+            var result = await _currencyService.DeleteCurrencyAsync(id);
 
             switch (result)
             {
@@ -87,7 +87,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("{currencyId}/rates")]
         public async Task<ActionResult<CurrencyRateGridModel[]>> GetRates(int currencyId, int? rateId, int? page)
         {
-            var (rates, pagination) = await _currencyRateService.GetRatesAsync(AccountId, currencyId, rateId, page);
+            var (rates, pagination) = await _currencyRateService.GetRatesAsync(currencyId, rateId, page);
 
             pagination.Id = rateId;
 
@@ -99,7 +99,7 @@ namespace SimpleBudget.API.Controllers
         [HttpPost("{currencyId}/rates")]
         public async Task<ActionResult<CurrencyRateGridModel[]>> CreateCurrencyRate(int currencyId, CurrencyRateEditModel model)
         {
-            var rateId = await _currencyRateService.CreateRateAsync(AccountId, currencyId, model);
+            var rateId = await _currencyRateService.CreateRateAsync(currencyId, model);
             if (rateId == null)
                 return BadRequest(new ProblemDetails { Title = "Currency doesn't exist" });
 
@@ -109,7 +109,7 @@ namespace SimpleBudget.API.Controllers
         [HttpPut("{currencyId}/rates/{rateId}")]
         public async Task<ActionResult<CurrencyRateGridModel[]>> UpdateCurrencyRate(int currencyId, int rateId, CurrencyRateEditModel model)
         {
-            if (!await _currencyRateService.UpdateRateAsync(AccountId, rateId, model))
+            if (!await _currencyRateService.UpdateRateAsync(rateId, model))
                 return BadRequest(new ProblemDetails { Title = "Currency rate doesn't exist" });
 
             return await GetRates(currencyId, rateId, null);
@@ -120,7 +120,7 @@ namespace SimpleBudget.API.Controllers
         {
             var actualPage = await _currencyRateService.GetActualPage(currencyId, rateId);
 
-            if (!await _currencyRateService.DeleteRateAsync(AccountId, rateId))
+            if (!await _currencyRateService.DeleteRateAsync(rateId))
                 return BadRequest(new ProblemDetails { Title = "Currency rate doesn't exist" });
 
             return await GetRates(currencyId, null, actualPage);

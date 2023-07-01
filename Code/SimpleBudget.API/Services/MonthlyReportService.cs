@@ -5,6 +5,7 @@ namespace SimpleBudget.API
 {
     public class MonthlyReportService
     {
+        private readonly IdentityService _identity;
         private readonly UnpaidTaxService _unpaidTaxService;
         private readonly ReportSearch _reportSearch;
         private readonly CurrencySearch _currencySearch;
@@ -13,6 +14,7 @@ namespace SimpleBudget.API
         private readonly WalletSearch _walletSearch;
 
         public MonthlyReportService(
+            IdentityService identity,
             UnpaidTaxService unpaidTaxService,
             ReportSearch reportSearch,
             CurrencySearch currencySearch,
@@ -21,6 +23,7 @@ namespace SimpleBudget.API
             WalletSearch walletSearch
             )
         {
+            _identity = identity;
             _unpaidTaxService = unpaidTaxService;
             _reportSearch = reportSearch;
             _currencySearch = currencySearch;
@@ -29,9 +32,9 @@ namespace SimpleBudget.API
             _walletSearch = walletSearch;
         }
 
-        public async Task<MonthlyModel> CreateAsync(int accountId, int? year, int? month)
+        public async Task<MonthlyModel> CreateAsync(int? year, int? month)
         {
-            var cad = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.Code == "CAD");
+            var cad = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == "CAD");
 
             if (cad == null)
                 throw new ArgumentException($"CAD currency is not found");
@@ -52,11 +55,11 @@ namespace SimpleBudget.API
             for (int i = 1; i <= 12; i++)
                 model.MonthNames.Add($"{new DateTime(2020, i, 1):MMMM}");
 
-            await AddReportMonthlyAsync(accountId, model, cad.ValueFormat);
-            await AddReportWeeklyAsync(accountId, model);
-            await AddReportPlanAsync(accountId, model);
-            await AddReportMonthlySummaryAsync(accountId, model, cad.ValueFormat);
-            await AddTaxReportMonthlyWalletItem(accountId, model, cad.ValueFormat);
+            await AddReportMonthlyAsync(model, cad.ValueFormat);
+            await AddReportWeeklyAsync(model);
+            await AddReportPlanAsync(model);
+            await AddReportMonthlySummaryAsync(model, cad.ValueFormat);
+            await AddTaxReportMonthlyWalletItem(model, cad.ValueFormat);
 
             CalculateTotals(model, cad.ValueFormat);
 
@@ -88,9 +91,9 @@ namespace SimpleBudget.API
             model.FormattedTotalSummaryDiffCAD = string.Format(valueFormatCAD, Math.Abs(model.Summaries.Sum(x => x.DiffCAD)));
         }
 
-        private async Task AddReportMonthlyAsync(int accountId, MonthlyModel model, string valueFormatCAD)
+        private async Task AddReportMonthlyAsync(MonthlyModel model, string valueFormatCAD)
         {
-            var data = await _reportSearch.SelectReportMonthly(accountId, model.SelectedYear, model.SelectedMonth);
+            var data = await _reportSearch.SelectReportMonthly(_identity.AccountId, model.SelectedYear, model.SelectedMonth);
 
             model.Wallets = data.Wallets.Select(x =>
             {
@@ -123,7 +126,7 @@ namespace SimpleBudget.API
             }).ToList();
         }
 
-        private async Task AddReportWeeklyAsync(int accountId, MonthlyModel model)
+        private async Task AddReportWeeklyAsync(MonthlyModel model)
         {
             var now = DateTime.Today;
 
@@ -135,7 +138,7 @@ namespace SimpleBudget.API
                 ? now.AddDays(-6)
                 : now.AddDays(1 - (int)now.DayOfWeek);
 
-            var data = await _reportSearch.SelectReportWeekly(accountId, firstDay);
+            var data = await _reportSearch.SelectReportWeekly(_identity.AccountId, firstDay);
 
             foreach (var current in data)
             {
@@ -156,12 +159,12 @@ namespace SimpleBudget.API
             }
         }
 
-        private async Task AddReportPlanAsync(int accountId, MonthlyModel model)
+        private async Task AddReportPlanAsync(MonthlyModel model)
         {
             var start = new DateTime(model.SelectedYear, model.SelectedMonth, 1);
             var end = start.AddMonths(1);
 
-            var payments = (await _planPaymentSearch.GetPayments(accountId, start, end))
+            var payments = (await _planPaymentSearch.GetPayments(_identity.AccountId, start, end))
                 .Where(x => x.Value < 0)
                 .ToList();
 
@@ -215,9 +218,9 @@ namespace SimpleBudget.API
             }
         }
 
-        private async Task AddReportMonthlySummaryAsync(int accountId, MonthlyModel model, string valueFormatCAD)
+        private async Task AddReportMonthlySummaryAsync(MonthlyModel model, string valueFormatCAD)
         {
-            var summary = await _reportSearch.SelectReportMonthlySummary(accountId, model.SelectedYear, model.SelectedMonth);
+            var summary = await _reportSearch.SelectReportMonthlySummary(_identity.AccountId, model.SelectedYear, model.SelectedMonth);
 
             var diff = summary.Current - summary.Beginning;
 
@@ -236,13 +239,13 @@ namespace SimpleBudget.API
             };
         }
 
-        private async Task AddTaxReportMonthlyWalletItem(int accountId, MonthlyModel model, string valueFormatCAD)
+        private async Task AddTaxReportMonthlyWalletItem(MonthlyModel model, string valueFormatCAD)
         {
             var currentMonth = new DateTime(model.SelectedYear, model.SelectedMonth, 1);
             var lastMonth = currentMonth.AddMonths(-1);
 
-            var current = - await _unpaidTaxService.CalculateUnpaidTaxAsync(accountId, currentMonth.Year, currentMonth.Month, currentMonth.AddMonths(1).AddDays(-1));
-            var beginning = - await _unpaidTaxService.CalculateUnpaidTaxAsync(accountId, lastMonth.Year, lastMonth.Month, lastMonth.AddMonths(1).AddDays(-1));
+            var current = - await _unpaidTaxService.CalculateUnpaidTaxAsync(currentMonth.Year, currentMonth.Month, currentMonth.AddMonths(1).AddDays(-1));
+            var beginning = - await _unpaidTaxService.CalculateUnpaidTaxAsync(lastMonth.Year, lastMonth.Month, lastMonth.AddMonths(1).AddDays(-1));
             var diff = current - beginning;
 
             model.Summaries.Add(new MonthlySummaryModel

@@ -5,25 +5,28 @@ namespace SimpleBudget.API
 {
     public class SummaryReportService
     {
+        private readonly IdentityService _identity;
         private readonly UnpaidTaxService _unpaidTaxService;
         private readonly ReportSearch _reportSearch;
         private readonly CurrencySearch _currencySearch;
 
         public SummaryReportService(
+            IdentityService identity,
             UnpaidTaxService unpaidTaxService,
             ReportSearch reportSearch,
             CurrencySearch currencySearch
             )
         {
+            _identity = identity;
             _unpaidTaxService = unpaidTaxService;
             _reportSearch = reportSearch;
             _currencySearch = currencySearch;
         }
 
-        public async Task<SummaryModel> CreateAsync(int accountId)
+        public async Task<SummaryModel> CreateAsync()
         {
-            var data = await _reportSearch.SelectWalletSummary(accountId);
-            var cad = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.Code == "CAD");
+            var data = await _reportSearch.SelectWalletSummary(_identity.AccountId);
+            var cad = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == "CAD");
 
             if (cad == null)
                 throw new ArgumentException($"CAD currency is not found");
@@ -56,7 +59,7 @@ namespace SimpleBudget.API
                 }).ToList();
 
             var totalValue = data.Count > 0 ? data.Sum(x => x.Value * x.Rate) : 0;
-            var tax = await _unpaidTaxService.CalculateUnpaidTaxAsync(accountId, TimeHelper.GetLocalTime().Year, null, null);
+            var tax = await _unpaidTaxService.CalculateUnpaidTaxAsync(TimeHelper.GetLocalTime().Year, null, null);
 
             model.TaxCAD = tax;
             model.FormattedTotalValue = FormatHelper.FormatValue(totalValue, cad.ValueFormat);

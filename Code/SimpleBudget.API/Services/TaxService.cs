@@ -28,6 +28,7 @@ namespace SimpleBudget.API
             public decimal Estimated { get; set; }
         }
 
+        private readonly IdentityService _identity;
         private readonly CurrencySearch _currencySearch;
         private readonly PersonSearch _personSearch;
         private readonly PaymentSearch _paymentSearch;
@@ -36,7 +37,6 @@ namespace SimpleBudget.API
         private readonly TaxYearSearch _taxYearSearch;
         private readonly TaxYearStore _taxYearStore;
 
-        private int _accountId;
         private TaxModel _model = default!;
         private int? _limitMonth;
         private DateTime? _limitTaxPaymentDate;
@@ -50,15 +50,17 @@ namespace SimpleBudget.API
         private decimal _estimatedYearIncome;
 
         public TaxService(
-                CurrencySearch currencySearch,
-                PersonSearch personSearch,
-                PaymentSearch paymentSearch,
-                TaxRateSearch taxRateSearch,
-                TaxSettingSearch taxSettingSearch,
-                TaxYearSearch taxYearSearch,
-                TaxYearStore taxYearStore
+            IdentityService identity,
+            CurrencySearch currencySearch,
+            PersonSearch personSearch,
+            PaymentSearch paymentSearch,
+            TaxRateSearch taxRateSearch,
+            TaxSettingSearch taxSettingSearch,
+            TaxYearSearch taxYearSearch,
+            TaxYearStore taxYearStore
             )
         {
+            _identity = identity;
             _currencySearch = currencySearch;
             _personSearch = personSearch;
             _paymentSearch = paymentSearch;
@@ -68,9 +70,9 @@ namespace SimpleBudget.API
             _taxYearStore = taxYearStore;
         }
 
-        public async Task<TaxModel> CloseYearAsync(int accountId, int? personId, int? year)
+        public async Task<TaxModel> CloseYearAsync(int? personId, int? year)
         {
-            await CreateModelAsync(accountId, personId, year, null, null);
+            await CreateModelAsync(personId, year, null, null);
 
             if (_model.SelectedPersonId == null)
                 return _model;
@@ -106,9 +108,9 @@ namespace SimpleBudget.API
             return _model;
         }
 
-        public async Task<TaxModel> OpenYearAsync(int accountId, int? personId, int? year)
+        public async Task<TaxModel> OpenYearAsync(int? personId, int? year)
         {
-            await CreateModelAsync(accountId, personId, year, null, null);
+            await CreateModelAsync(personId, year, null, null);
 
             if (_model.SelectedPersonId == null)
                 return _model;
@@ -124,13 +126,11 @@ namespace SimpleBudget.API
             return _model;
         }
 
-        public async Task<TaxModel> CreateModelAsync(int accountId, int? selectedPersonId, int? selectedYear, int? limitMonth, DateTime? limitTaxPaymentDate)
+        public async Task<TaxModel> CreateModelAsync(int? selectedPersonId, int? selectedYear, int? limitMonth, DateTime? limitTaxPaymentDate)
         {
-            var cad = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.Code == "CAD");
+            var cad = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == "CAD");
             if (cad == null)
                 throw new ArgumentException("CAD currency is not found");
-
-            _accountId = accountId;
 
             _model = new TaxModel();
 
@@ -270,7 +270,7 @@ namespace SimpleBudget.API
                     PersonId = x.PersonId,
                     Name = x.Name
                 },
-                x => x.AccountId == _accountId,
+                x => x.AccountId == _identity.AccountId,
                 q => q.OrderBy(x => x.PersonId)
             )).ToList();
 
@@ -311,7 +311,7 @@ namespace SimpleBudget.API
                         : 1
                 },
                 x =>
-                    x.Wallet.AccountId == _accountId
+                    x.Wallet.AccountId == _identity.AccountId
                     && x.PersonId == _model.SelectedPersonId
                     && x.Value > 0
                     && x.PaymentDate.Year == _model.SelectedYear
@@ -343,7 +343,7 @@ namespace SimpleBudget.API
 
         private async Task<DeductionItem> LoadDeductionAsync(string name, string? exemptionAmountName, string company)
         {
-            var taxRate = (await _taxRateSearch.Select(x => x.AccountId == _accountId && x.Name == name && x.PeriodYear <= _model.SelectedYear))
+            var taxRate = (await _taxRateSearch.Select(x => x.AccountId == _identity.AccountId && x.Name == name && x.PeriodYear <= _model.SelectedYear))
                 .OrderByDescending(x => x.PeriodYear)
                 .FirstOrDefault();
 
@@ -351,7 +351,7 @@ namespace SimpleBudget.API
                 throw new ArgumentException($"TaxRate is not specified for {name}");
 
             var exemptionAmount = exemptionAmountName != null
-                ? (await _taxSettingSearch.Select(x => x.AccountId == _accountId && x.Name == exemptionAmountName && x.PeriodYear <= _model.SelectedYear))
+                ? (await _taxSettingSearch.Select(x => x.AccountId == _identity.AccountId && x.Name == exemptionAmountName && x.PeriodYear <= _model.SelectedYear))
                     .OrderByDescending(x => x.PeriodYear)
                     .FirstOrDefault()
                 : null;
@@ -377,15 +377,15 @@ namespace SimpleBudget.API
 
         private async Task<Tax> LoadIncomeTaxAsync(string taxName, string basicPersonalAmountName, string? employmentBaseAmountName, string company)
         {
-            var taxLatestYear = await  _taxRateSearch.SelectLatestYear(_accountId, taxName, _model.SelectedYear);
+            var taxLatestYear = await  _taxRateSearch.SelectLatestYear(_identity.AccountId, taxName, _model.SelectedYear);
 
             var taxRates = (await _taxRateSearch.Bind(
                 x => new TaxRateItem { Rate = x.Rate, MaxAmount = x.MaxAmount },
-                x => x.AccountId == _accountId && x.Name == taxName && x.PeriodYear == taxLatestYear,
+                x => x.AccountId == _identity.AccountId && x.Name == taxName && x.PeriodYear == taxLatestYear,
                 q => q.OrderBy(x => x.MaxAmount)
             )).ToList();
 
-            var basicPersonalAmount = (await _taxSettingSearch.Select(x => x.AccountId == _accountId && x.Name == basicPersonalAmountName && x.PeriodYear <= _model.SelectedYear))
+            var basicPersonalAmount = (await _taxSettingSearch.Select(x => x.AccountId == _identity.AccountId && x.Name == basicPersonalAmountName && x.PeriodYear <= _model.SelectedYear))
                 .OrderByDescending(x => x.PeriodYear)
                 .FirstOrDefault();
 
@@ -393,7 +393,7 @@ namespace SimpleBudget.API
                 throw new ArgumentException($"BasicPersonalAmount is not specified for {basicPersonalAmountName}");
 
             var employmentBaseAmount = employmentBaseAmountName != null
-                ? (await _taxSettingSearch.Select(x => x.AccountId == _accountId && x.Name == employmentBaseAmountName && x.PeriodYear <= _model.SelectedYear))
+                ? (await _taxSettingSearch.Select(x => x.AccountId == _identity.AccountId && x.Name == employmentBaseAmountName && x.PeriodYear <= _model.SelectedYear))
                     .OrderByDescending(x => x.PeriodYear)
                     .FirstOrDefault()
                 : null;

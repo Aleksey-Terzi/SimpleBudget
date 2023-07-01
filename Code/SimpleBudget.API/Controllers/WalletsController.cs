@@ -9,6 +9,7 @@ namespace SimpleBudget.API.Controllers
     [Authorize]
     public class WalletsController : BaseApiController
     {
+        private readonly IdentityService _identity;
         private readonly WalletSearch _walletSearch;
         private readonly WalletStore _walletStore;
         private readonly PaymentSearch _paymentSearch;
@@ -16,6 +17,7 @@ namespace SimpleBudget.API.Controllers
         private readonly CurrencySearch _currencySearch;
 
         public WalletsController(
+            IdentityService identity,
             WalletSearch walletSearch,
             WalletStore walletStore,
             PaymentSearch paymentSearch,
@@ -23,6 +25,7 @@ namespace SimpleBudget.API.Controllers
             CurrencySearch currencySearch
             )
         {
+            _identity = identity;
             _walletSearch = walletSearch;
             _walletStore = walletStore;
             _paymentSearch = paymentSearch;
@@ -42,7 +45,7 @@ namespace SimpleBudget.API.Controllers
                     CurrencyCode = x.Currency.Code,
                     PaymentCount = x.Payments.Count
                 },
-                x => x.AccountId == AccountId,
+                x => x.AccountId == _identity.AccountId,
                 q => q.OrderBy(x => x.WalletName)
             );
 
@@ -53,8 +56,8 @@ namespace SimpleBudget.API.Controllers
         public async Task<ActionResult<WalletEditModel>> GetWallet(int id, bool includeNames)
         {
             var wallet = includeNames
-                ? await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == AccountId, x => x.Person, x => x.Currency)
-                : await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == AccountId);
+                ? await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == _identity.AccountId, x => x.Person, x => x.Currency)
+                : await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == _identity.AccountId);
 
             if (wallet == null)
                 return BadRequest(new ProblemDetails { Title = "Wallet doesn't exist" });
@@ -85,7 +88,7 @@ namespace SimpleBudget.API.Controllers
                     Id = x.PersonId,
                     Name = x.Name
                 },
-                x => x.AccountId == AccountId,
+                x => x.AccountId == _identity.AccountId,
                 q => q.OrderBy(x => x.Id)
             );
 
@@ -95,7 +98,7 @@ namespace SimpleBudget.API.Controllers
                     Id = x.CurrencyId,
                     Name = x.Code
                 },
-                x => x.AccountId == AccountId,
+                x => x.AccountId == _identity.AccountId,
                 q => q.OrderBy(x => x.Name)
             );
 
@@ -105,19 +108,19 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("exists")]
         public async Task<ActionResult<bool>> WalletExists(string name, int? excludeId)
         {
-            var item = await _walletSearch.SelectFirst(x => x.AccountId == AccountId && x.Name == name);
+            var item = await _walletSearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Name == name);
             return item != null && item.WalletId != excludeId;
         }
 
         [HttpPost]
         public async Task<ActionResult<int>> CreateWallet(WalletEditModel model)
         {
-            if (await _walletSearch.Exists(x => x.AccountId == AccountId && x.Name == model.WalletName))
+            if (await _walletSearch.Exists(x => x.AccountId == _identity.AccountId && x.Name == model.WalletName))
                 return BadRequest(new ProblemDetails { Title = "The wallet with such a name already exists" });
 
             var wallet = new Wallet
             {
-                AccountId = AccountId,
+                AccountId = _identity.AccountId,
                 Name = model.WalletName,
                 PersonId = model.PersonId,
                 CurrencyId = model.CurrencyId
@@ -131,7 +134,7 @@ namespace SimpleBudget.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateWallet(int id, WalletEditModel model)
         {
-            var wallet = await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == AccountId);
+            var wallet = await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == _identity.AccountId);
             if (wallet == null)
                 return BadRequest(new ProblemDetails { Title = "Wallet doesn't exist" });
 
@@ -147,7 +150,7 @@ namespace SimpleBudget.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteWallet(int id)
         {
-            var wallet = await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == AccountId);
+            var wallet = await _walletSearch.SelectFirst(x => x.WalletId == id && x.AccountId == _identity.AccountId);
             if (wallet == null)
                 return BadRequest(new ProblemDetails { Title = "Wallet doesn't exist" });
 

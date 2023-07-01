@@ -5,16 +5,19 @@ namespace SimpleBudget.API
 {
     public class CurrencyRateService
     {
+        private readonly IdentityService _identity;
         private readonly CurrencySearch _currencySearch;
         private readonly CurrencyRateSearch _currencyRateSearch;
         private readonly CurrencyRateStore _currencyRateStore;
 
         public CurrencyRateService(
+            IdentityService identity,
             CurrencySearch currencySearch,
             CurrencyRateSearch currencyRateSearch,
             CurrencyRateStore currencyRateStore
             )
         {
+            _identity = identity;
             _currencySearch = currencySearch;
             _currencyRateSearch = currencyRateSearch;
             _currencyRateStore = currencyRateStore;
@@ -30,9 +33,9 @@ namespace SimpleBudget.API
             );
         }
 
-        public async Task<(CurrencyRateGridModel[] Items, PaginationData Pagination)> GetRatesAsync(int accountId, int currencyId, int? rateId, int? page)
+        public async Task<(CurrencyRateGridModel[] Items, PaginationData Pagination)> GetRatesAsync(int currencyId, int? rateId, int? page)
         {
-            var count = await _currencyRateSearch.Count(x => x.CurrencyId == currencyId && x.Currency.AccountId == accountId);
+            var count = await _currencyRateSearch.Count(x => x.CurrencyId == currencyId && x.Currency.AccountId == _identity.AccountId);
 
             var actualPage = await FilterHelper.GetPageAsync(
                 rateId,
@@ -45,7 +48,7 @@ namespace SimpleBudget.API
 
             var rates = await _currencyRateSearch.Bind(
                 x => x,
-                x => x.CurrencyId == currencyId && x.Currency.AccountId == accountId,
+                x => x.CurrencyId == currencyId && x.Currency.AccountId == _identity.AccountId,
                 q => q
                     .OrderByDescending(x => x.StartDate)
                     .ThenBy(x => x.CurrencyRateId)
@@ -68,9 +71,9 @@ namespace SimpleBudget.API
             return (result, pagination);
         }
 
-        public async Task<int?> CreateRateAsync(int accountId, int currencyId, CurrencyRateEditModel model)
+        public async Task<int?> CreateRateAsync(int currencyId, CurrencyRateEditModel model)
         {
-            if (!await _currencySearch.Exists(x => x.AccountId == accountId && x.CurrencyId == currencyId))
+            if (!await _currencySearch.Exists(x => x.AccountId == _identity.AccountId && x.CurrencyId == currencyId))
                 return null;
 
             var rate = new CurrencyRate
@@ -86,9 +89,9 @@ namespace SimpleBudget.API
             return rate.CurrencyRateId;
         }
 
-        public async Task<bool> UpdateRateAsync(int accountId, int rateId, CurrencyRateEditModel model)
+        public async Task<bool> UpdateRateAsync(int rateId, CurrencyRateEditModel model)
         {
-            var rate = await _currencyRateSearch.SelectFirst(x => x.CurrencyRateId == rateId && x.Currency.AccountId == accountId);
+            var rate = await _currencyRateSearch.SelectFirst(x => x.CurrencyRateId == rateId && x.Currency.AccountId == _identity.AccountId);
             if (rate == null)
                 return false;
 
@@ -101,9 +104,9 @@ namespace SimpleBudget.API
             return true;
         }
 
-        public async Task<bool> DeleteRateAsync(int accountId, int rateId)
+        public async Task<bool> DeleteRateAsync(int rateId)
         {
-            var rate = await _currencyRateSearch.SelectFirst(x => x.CurrencyRateId == rateId && x.Currency.AccountId == accountId );
+            var rate = await _currencyRateSearch.SelectFirst(x => x.CurrencyRateId == rateId && x.Currency.AccountId == _identity.AccountId);
             if (rate == null)
                 return false;
 

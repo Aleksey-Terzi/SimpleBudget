@@ -9,16 +9,19 @@ namespace SimpleBudget.API.Controllers
     [Authorize]
     public class CompaniesController : BaseApiController
     {
+        private readonly IdentityService _identity;
         private readonly CompanySearch _companySearch;
         private readonly CompanyStore _companyStore;
         private readonly PaymentSearch _paymentSearch;
 
         public CompaniesController(
+            IdentityService identity,
             CompanySearch companySearch,
             CompanyStore companyStore,
             PaymentSearch paymentSearch
             )
         {
+            _identity = identity;
             _companySearch = companySearch;
             _companyStore = companyStore;
             _paymentSearch = paymentSearch;
@@ -34,7 +37,7 @@ namespace SimpleBudget.API.Controllers
                     Name = x.Name,
                     PaymentCount = x.Payments.Count
                 },
-                x => x.AccountId == AccountId
+                x => x.AccountId == _identity.AccountId
             );
 
             return categories.OrderBy(x => x.Name).ToList();
@@ -43,7 +46,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CompanyEditModel>> GetCompany(int id)
         {
-            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == AccountId);
+            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == _identity.AccountId);
             if (company == null)
                 return BadRequest(new ProblemDetails { Title = "Company doesn't exist" });
 
@@ -59,19 +62,19 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("exists")]
         public async Task<ActionResult<bool>> CompanyExists(string name, int? excludeId)
         {
-            var item = await _companySearch.SelectFirst(x => x.AccountId == AccountId && x.Name == name);
+            var item = await _companySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Name == name);
             return item != null && item.CompanyId != excludeId;
         }
 
         [HttpPost]
         public async Task<ActionResult<int>> CreateCompany(CategoryEditModel model)
         {
-            if (await _companySearch.Exists(x => x.AccountId == AccountId && x.Name == model.Name))
+            if (await _companySearch.Exists(x => x.AccountId == _identity.AccountId && x.Name == model.Name))
                 return BadRequest(new ProblemDetails { Title = "The company with such a name already exists" });
 
             var company = new Company
             {
-                AccountId = AccountId,
+                AccountId = _identity.AccountId,
                 Name = model.Name
             };
 
@@ -83,7 +86,7 @@ namespace SimpleBudget.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateCompany(int id, CompanyEditModel model)
         {
-            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == AccountId);
+            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == _identity.AccountId);
             if (company == null)
                 return BadRequest(new ProblemDetails { Title = "Company doesn't exist" });
 
@@ -97,7 +100,7 @@ namespace SimpleBudget.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCompany(int id)
         {
-            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == AccountId);
+            var company = await _companySearch.SelectFirst(x => x.CompanyId == id && x.AccountId == _identity.AccountId);
             if (company == null)
                 return BadRequest(new ProblemDetails { Title = "Company doesn't exist" });
 

@@ -8,22 +8,25 @@ namespace SimpleBudget.API
         public enum UpdateCurrencyResult { NoCurrency, CodeExists, Created }
         public enum DeleteCurrencyResult { NoCurrency, HasWallets, Deleted }
 
+        private readonly IdentityService _identity;
         private readonly CurrencySearch _currencySearch;
         private readonly CurrencyStore _currencyStore;
         private readonly WalletSearch _walletSearch;
 
         public CurrencyService(
+            IdentityService identity,
             CurrencySearch currencySearch,
             CurrencyStore currencyStore,
             WalletSearch walletSearch
             )
         {
+            _identity = identity;
             _currencySearch = currencySearch;
             _currencyStore = currencyStore;
             _walletSearch = walletSearch;
         }
 
-        public async Task<CurrencyGridModel[]> GetCurrenciesAsync(int accountId)
+        public async Task<CurrencyGridModel[]> GetCurrenciesAsync()
         {
             var items = await _currencySearch.Bind(
                 x => new
@@ -40,7 +43,7 @@ namespace SimpleBudget.API
                                     .OrderByDescending(x => x.StartDate)
                                     .FirstOrDefault(),
                 },
-                x => x.AccountId == accountId,
+                x => x.AccountId == _identity.AccountId,
                 q => q.OrderBy(x => x.Code)
             );
 
@@ -58,9 +61,9 @@ namespace SimpleBudget.API
                 .ToArray();
         }
 
-        public async Task<CurrencyEditModel?> GetCurrencyAsync(int accountId, int currencyId)
+        public async Task<CurrencyEditModel?> GetCurrencyAsync(int currencyId)
         {
-            var currency = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.CurrencyId == currencyId);
+            var currency = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.CurrencyId == currencyId);
             if (currency == null)
                 return null;
 
@@ -74,20 +77,20 @@ namespace SimpleBudget.API
             };
         }
 
-        public async Task<bool> CurrencyExistsAsync(int accountId, string currencyCode, int? excludeId)
+        public async Task<bool> CurrencyExistsAsync(string currencyCode, int? excludeId)
         {
-            var currency = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.Code == currencyCode);
+            var currency = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == currencyCode);
             return currency != null && currency.CurrencyId != excludeId;
         }
 
-        public async Task<int?> CreateCurrencyAsync(int accountId, CurrencyEditModel model)
+        public async Task<int?> CreateCurrencyAsync(CurrencyEditModel model)
         {
-            if (await _currencySearch.Exists(x => x.AccountId == accountId && x.Code == model.Code))
+            if (await _currencySearch.Exists(x => x.AccountId == _identity.AccountId && x.Code == model.Code))
                 return null;
 
             var currency = new Currency
             {
-                AccountId = accountId,
+                AccountId = _identity.AccountId,
                 Code = model.Code,
                 ValueFormat = model.ValueFormat
             };
@@ -97,13 +100,13 @@ namespace SimpleBudget.API
             return currency.CurrencyId;
         }
 
-        public async Task<UpdateCurrencyResult> UpdateCurrencyAsync(int accountId, int currencyId, CurrencyEditModel model)
+        public async Task<UpdateCurrencyResult> UpdateCurrencyAsync(int currencyId, CurrencyEditModel model)
         {
-            var currency = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.CurrencyId == currencyId);
+            var currency = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.CurrencyId == currencyId);
             if (currency == null)
                 return UpdateCurrencyResult.NoCurrency;
 
-            if (await _currencySearch.Exists(x => x.AccountId == accountId && x.Code == model.Code && x.CurrencyId != currencyId))
+            if (await _currencySearch.Exists(x => x.AccountId == _identity.AccountId && x.Code == model.Code && x.CurrencyId != currencyId))
                 return UpdateCurrencyResult.CodeExists;
 
             currency.Code = model.Code;
@@ -113,9 +116,9 @@ namespace SimpleBudget.API
             return UpdateCurrencyResult.Created;
         }
 
-        public async Task<DeleteCurrencyResult> DeleteCurrencyAsync(int accountId, int currencyId)
+        public async Task<DeleteCurrencyResult> DeleteCurrencyAsync(int currencyId)
         {
-            var currency = await _currencySearch.SelectFirst(x => x.AccountId == accountId && x.CurrencyId == currencyId);
+            var currency = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.CurrencyId == currencyId);
             if (currency == null)
                 return DeleteCurrencyResult.NoCurrency;
 

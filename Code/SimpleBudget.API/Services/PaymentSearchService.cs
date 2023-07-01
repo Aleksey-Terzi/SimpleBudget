@@ -7,24 +7,27 @@ namespace SimpleBudget.API
 {
     public class PaymentSearchService
     {
+        private readonly IdentityService _identity;
         private readonly PaymentSearch _paymentSearch;
         private readonly WalletSearch _walletSearch;
 
         public PaymentSearchService(
+            IdentityService identity,
             PaymentSearch paymentSearch,
             WalletSearch walletSearch
             )
         {
+            _identity = identity;
             _paymentSearch = paymentSearch;
             _walletSearch = walletSearch;
         }
 
-        public async Task<(PaymentGridItemModel[] Items, PaginationData Pagination)> Search(int accountId, PaymentFilterModel input)
+        public async Task<(PaymentGridItemModel[] Items, PaginationData Pagination)> Search(PaymentFilterModel input)
         {
             input.Text = HttpUtility.UrlDecode(input.Text);
 
             var filter = new PaymentFilter();
-            FilterHelper.CreateFilter(accountId, input.Type, input.Text, filter);
+            FilterHelper.CreateFilter(_identity.AccountId, input.Type, input.Text, filter);
 
             var itemCount = await _paymentSearch.Count(filter);
 
@@ -120,10 +123,10 @@ namespace SimpleBudget.API
             return result;
         }
 
-        public async Task<PaymentEditItemModel?> GetPayment(int accountId, int id)
+        public async Task<PaymentEditItemModel?> GetPayment(int id)
         {
             var payment = await _paymentSearch.SelectFirst(
-                x => x.PaymentId == id && x.Wallet.AccountId == accountId,
+                x => x.PaymentId == id && x.Wallet.AccountId == _identity.AccountId,
                 x => x.Company, x => x.Category, x => x.Wallet, x => x.Person, x => x.Children
             );
 

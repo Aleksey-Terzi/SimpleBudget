@@ -24,7 +24,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("summary")]
         public async Task<ActionResult<SummaryModel>> GetSummary()
         {
-            return await _summaryReportService.CreateAsync(AccountId);
+            return await _summaryReportService.CreateAsync();
         }
 
         [HttpGet("monthly")]
@@ -38,7 +38,7 @@ namespace SimpleBudget.API.Controllers
             if (!int.TryParse(month, out var monthInt) || monthInt < 1 || monthInt > 12)
                 monthInt = now.Month;
 
-            return await _monthlyReportService.CreateAsync(AccountId, yearInt, monthInt);
+            return await _monthlyReportService.CreateAsync(yearInt, monthInt);
         }
     }
 }
