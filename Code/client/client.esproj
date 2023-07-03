@@ -22,5 +22,6 @@
     <Folder Include="src\routes\reports\components\" />
     <Folder Include="src\routes\taxes\components\" />
     <Folder Include="src\routes\taxes\models\" />
+    <Folder Include="src\routes\taxSettings\utils\" />
   </ItemGroup>
 </Project>

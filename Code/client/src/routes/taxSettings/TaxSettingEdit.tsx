@@ -1,9 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Card, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import DeleteLink from "../../components/DeleteLink";
 import LoadingButton from "../../components/LoadingButton";
 import LoadingPanel from "../../components/LoadingPanel";
 import requestHelper from "../../utils/requestHelper";
@@ -12,11 +11,9 @@ import TaxSettingDetail from "./components/TaxSettingDetail";
 import { TaxSettingEditModel } from "./models/taxSettingEditModel";
 import numberHelper from "../../utils/numberHelper";
 import TaxRateGrid from "./components/TaxRateGrid";
-import { TaxRateModel } from "./models/taxRateModel";
 import { TaxRateGridModel } from "./models/taxRateGridModel";
 import getTaxSettingSchema from "./models/taxSettingSchema";
-
-type NamePrefix = "fed" | "prov";
+import { NamePrefix, rateHelper } from "./utils/rateHelper";
 
 export default function TaxSettingEdit() {
     const yearText = useParams<{ year: string }>().year;
@@ -28,11 +25,11 @@ export default function TaxSettingEdit() {
     const [model, setModel] = useState<TaxSettingEditModel>();
     const [federalTaxRates, setFederalTaxRates] = useState<TaxRateGridModel[]>();
     const [provincialTaxRates, setProvincialTaxRates] = useState<TaxRateGridModel[]>();
-    const [nextRateId, setNextRateId] = useState(1);
     const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const nextRateIdRef = useRef(1);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const fromStr = searchParams.get("from");
@@ -53,10 +50,10 @@ export default function TaxSettingEdit() {
             .then(r => {
                 setModel(r);
 
-                setFederalTaxRates(initRates("fed", r.federalTaxRates, nextRateId));
-                setProvincialTaxRates(initRates("prov", r.provincialTaxRates, nextRateId + r.federalTaxRates.length));
+                setFederalTaxRates(rateHelper.initRates("fed", r.federalTaxRates, 1));
+                setProvincialTaxRates(rateHelper.initRates("prov", r.provincialTaxRates, 1 + r.federalTaxRates.length));
 
-                setNextRateId(nextRateId + r.federalTaxRates.length + r.provincialTaxRates.length);
+                nextRateIdRef.current = r.federalTaxRates.length + r.provincialTaxRates.length;
             })
             .catch(e => {
                 setError(responseHelper.getErrorMessage(e));
@@ -76,8 +73,8 @@ export default function TaxSettingEdit() {
             federalBasicPersonalAmount: numberHelper.parseNumber(values["federalBasicPersonalAmount"]),
             provincialBasicPersonalAmount: numberHelper.parseNumber(values["provincialBasicPersonalAmount"]),
             canadaEmploymentBaseAmount: numberHelper.parseNumber(values["canadaEmploymentBaseAmount"]),
-            federalTaxRates: saveRates("fed", values),
-            provincialTaxRates: saveRates("prov", values),
+            federalTaxRates: rateHelper.saveRates("fed", values),
+            provincialTaxRates: rateHelper.saveRates("prov", values),
         };
 
         setSaving(true);
@@ -94,59 +91,14 @@ export default function TaxSettingEdit() {
             });
     }
 
-    function saveRates(namePrefix: NamePrefix, values: any) {
-        const rates: TaxRateModel[] = [];
-        const startsWith = `${namePrefix}_rate_`;
-
-        for (let rateKey in values) {
-            if (!rateKey.startsWith(startsWith)) continue;
-
-            const maxAmountKey = `${namePrefix}_maxAmount_${rateKey.substring(startsWith.length)}`;
-
-            const rateItem = {
-                rate: numberHelper.parseNumber(values[rateKey])! / 100,
-                maxAmount: numberHelper.parseNumber(values[maxAmountKey])!
-            };
-
-            rates.push(rateItem);
-        }
-
-        return rates;
-    }
-
-    function initRates(namePrefix: NamePrefix, modelRates: TaxRateModel[], nextRateId: number) {
-        const gridRates: TaxRateGridModel[] = [];
-
-        for (let i = 0; i < modelRates.length; i++) {
-            const modelRate = modelRates[i];
-            const id = nextRateId + i;
-
-            const gridRate = createGridRate(id, namePrefix, modelRate.rate, modelRate.maxAmount);
-
-            gridRates.push(gridRate);
-        }
-
-        return gridRates;
-    }
-
-    function createGridRate(id: number, namePrefix: NamePrefix, rate?: number, maxAmount?: number) {
-        return {
-            id,
-            rateFieldName: `${namePrefix}_rate_${id}`,
-            maxAmountFieldName: `${namePrefix}_maxAmount_${id}`,
-            rate,
-            maxAmount
-        }
-    }
-
     function onAddRate(namePrefix: NamePrefix) {
         const newItem = {
-            id: nextRateId,
-            rateFieldName: `${namePrefix}_rate_${nextRateId}`,
-            maxAmountFieldName: `${namePrefix}_maxAmount_${nextRateId}`,
+            id: nextRateIdRef.current,
+            rateFieldName: `${namePrefix}_rate_${nextRateIdRef.current}`,
+            maxAmountFieldName: `${namePrefix}_maxAmount_${nextRateIdRef.current}`,
         };
 
-        setNextRateId(nextRateId + 1);
+        nextRateIdRef.current++;
 
         switch (namePrefix) {
             case "fed":
@@ -163,26 +115,27 @@ export default function TaxSettingEdit() {
             return;
         }
 
+        let setter: (rates: TaxRateGridModel[]) => void;
+        let taxRates: TaxRateGridModel[];
+
         switch (namePrefix) {
             case "fed":
-                setFederalTaxRates(deleteRate(id, federalTaxRates!));
+                setter = setFederalTaxRates;
+                taxRates = federalTaxRates!;
                 break;
             case "prov":
-                setProvincialTaxRates(deleteRate(id, provincialTaxRates!));
+                setter = setProvincialTaxRates;
+                taxRates = provincialTaxRates!;
                 break;
         }
-    }
 
-    function deleteRate(id: number, rates: TaxRateGridModel[]) {
-        const index = rates!.findIndex(x => x.id === id);
-        if (index < 0) {
-            return rates;
+        const [deletedRate, newTaxRates] = rateHelper.deleteRate(id, taxRates);
+        setter(newTaxRates);
+
+        if (deletedRate) {
+            useFormReturn.unregister(deletedRate.rateFieldName);
+            useFormReturn.unregister(deletedRate.maxAmountFieldName);
         }
-
-        const newRates = [...rates];
-        newRates.splice(index, 1);
-
-        return newRates;
     }
 
     function onDeleteSetting(e: any) {
@@ -192,7 +145,7 @@ export default function TaxSettingEdit() {
             return;
         }
 
-        setSaving(true);
+        setDeleting(true);
 
         requestHelper.TaxSettings.deleteTaxSetting(year)
             .then(() => {
@@ -202,13 +155,13 @@ export default function TaxSettingEdit() {
                 setError(responseHelper.getErrorMessage(e));
             })
             .finally(() => {
-                setSaving(false);
+                setDeleting(false);
             });
     }
 
     return (
         <>
-            {readFromYear != year && (
+            {readFromYear !== year && (
                 <Alert variant="warning">
                     Settings copied from year {readFromYear}
                 </Alert>
@@ -283,7 +236,7 @@ export default function TaxSettingEdit() {
                             text="Save Changes"
                             loadingText="Saving Changes..."
                             loading={saving}
-                            disabled={deleting}
+                            disabled={deleting || !!error}
                         />
                         <Link
                             className="btn btn-danger"
@@ -298,7 +251,7 @@ export default function TaxSettingEdit() {
                             text="Delete"
                             loadingText="Deleting..."
                             loading={deleting}
-                            disabled={saving}
+                            disabled={saving || !!error}
                             onClick={onDeleteSetting}
                         />
                     </Col>

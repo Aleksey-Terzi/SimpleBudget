@@ -19,6 +19,7 @@ export default function TaxRateGrid(props: Props) {
             href="https://www.canada.ca/en/revenue-agency/services/tax/individuals/frequently-asked-questions-individuals/canadian-income-tax-rates-individuals-current-previous-years.html"
             target="_blank"
             tabIndex={-1}
+            rel="noreferrer"
         >
             www.canada.ca/tax-rates
         </a>
