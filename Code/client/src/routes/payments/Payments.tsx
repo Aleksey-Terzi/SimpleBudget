@@ -10,11 +10,10 @@ import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 
 export default function Payments() {
-    const { payments, paginationData } = useAppSelector(state => state.payment);
+    const { payments, paginationData, filter } = useAppSelector(state => state.payment);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [searchParams] = useSearchParams();
-    const filter = paymentFilterHelper.getPaymentFilter(searchParams);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -46,7 +45,7 @@ export default function Payments() {
                 <PaymentFilter filter={filter} />
                 {!error ? (
                     <PaymentGrid
-                        selectedPaymentId={filter.id}
+                        selectedPaymentId={filter?.id}
                         filter={filter}
                         payments={!loading ? payments : undefined}
                         paginationData={paginationData}

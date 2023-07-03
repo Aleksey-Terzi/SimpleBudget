@@ -26,7 +26,7 @@ namespace SimpleBudget.API
         public async Task<SummaryModel> CreateAsync()
         {
             var data = await _reportSearch.SelectWalletSummary(_identity.AccountId);
-            var cad = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == "CAD");
+            var cad = await _currencySearch.SelectDefault(_identity.AccountId);
 
             if (cad == null)
                 throw new ArgumentException($"CAD currency is not found");

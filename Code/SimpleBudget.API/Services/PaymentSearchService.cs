@@ -10,24 +10,39 @@ namespace SimpleBudget.API
         private readonly IdentityService _identity;
         private readonly PaymentSearch _paymentSearch;
         private readonly WalletSearch _walletSearch;
+        private readonly CurrencySearch _currencySearch;
 
         public PaymentSearchService(
             IdentityService identity,
             PaymentSearch paymentSearch,
-            WalletSearch walletSearch
+            WalletSearch walletSearch,
+            CurrencySearch currencySearch
             )
         {
             _identity = identity;
             _paymentSearch = paymentSearch;
             _walletSearch = walletSearch;
+            _currencySearch = currencySearch;
+        }
+
+        public async Task<PaymentSumModel> CalcSum(PaymentFilterModel input)
+        {
+            var filter = CreateFilter(input);
+            filter.IncludeChildren = true;
+
+            var sum = await _paymentSearch.Sum(filter);
+            var cad = await _currencySearch.SelectDefault(_identity.AccountId);
+
+            return new PaymentSumModel
+            {
+                Sum = sum,
+                ValueFormat = cad.ValueFormat
+            };
         }
 
         public async Task<(PaymentGridItemModel[] Items, PaginationData Pagination)> Search(PaymentFilterModel input)
         {
-            input.Text = HttpUtility.UrlDecode(input.Text);
-
-            var filter = new PaymentFilter();
-            FilterHelper.CreateFilter(_identity.AccountId, input.Type, input.Text, filter);
+            var filter = CreateFilter(input);
 
             var itemCount = await _paymentSearch.Count(filter);
 
@@ -42,6 +57,15 @@ namespace SimpleBudget.API
             var pagination = FilterHelper.GetPagination(page, itemCount);
 
             return (items, pagination);
+        }
+
+        private PaymentFilter CreateFilter(PaymentFilterModel input)
+        {
+            var text = HttpUtility.UrlDecode(input.Text);
+
+            var filter = new PaymentFilter();
+            FilterHelper.CreateFilter(_identity.AccountId, input.Type, text, filter);
+            return filter;
         }
 
         private async Task<PaymentGridItemModel[]> GetItemsAsync(PaymentFilter filter, int page)

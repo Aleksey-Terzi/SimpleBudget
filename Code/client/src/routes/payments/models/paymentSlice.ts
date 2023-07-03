@@ -7,13 +7,14 @@ interface PaymentState {
     payments?: PaymentGridItemModel[];
     paginationData?: PaginationData;
     filter?: PaymentFilterModel;
-}
+    calcSum?: boolean;
+    sum?: number;
+    sumFormat?: string;
+};
 
 const initialState: PaymentState = {
-    payments: undefined,
-    paginationData: undefined,
-    filter: undefined
-}
+    sum: undefined
+};
 
 export const paymentSlice = createSlice({
     name: "payment",
@@ -23,8 +24,15 @@ export const paymentSlice = createSlice({
             state.payments = action.payload.payments;
             state.paginationData = action.payload.paginationData;
             state.filter = action.payload.filter;
+        },
+        revertCalcSum: state => {
+            state.calcSum = !state.calcSum;
+        },
+        setSum: (state, action) => {
+            state.sum = action.payload.sum;
+            state.sumFormat = action.payload.sumFormat;
         }
     }
 })
 
-export const { setPayments } = paymentSlice.actions;
+export const { setPayments, revertCalcSum, setSum } = paymentSlice.actions;

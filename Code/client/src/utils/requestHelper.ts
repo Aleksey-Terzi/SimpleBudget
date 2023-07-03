@@ -69,7 +69,8 @@ const Payments = {
     getPayment: (id: number) => requests.get(`payments/${id}`),
     createPayment: (item: PaymentModel) => requests.post("payments", item),
     updatePayment: (id: number, item: PaymentModel) => requests.put(`payments/${id}`, item),
-    deletePayment: (id: number) => requests.delete(`payments/${id}`)
+    deletePayment: (id: number) => requests.delete(`payments/${id}`),
+    sum: (filter: PaymentFilterModel) => requests.get("payments/sum", paramHelper.getParams(filter))
 }
 
 const PlanPayments = {

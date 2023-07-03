@@ -30,6 +30,12 @@ namespace SimpleBudget.API.Controllers
             return items;
         }
 
+        [HttpGet("sum")]
+        public async Task<ActionResult<PaymentSumModel>> CalcSum([FromQuery] PaymentFilterModel input)
+        {
+            return await _searchService.CalcSum(input);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<PaymentEditItemModel>> GetPayment(int id)
         {
