@@ -5,8 +5,9 @@ import LoadingPanel from "../../../components/LoadingPanel";
 import { PaginationData } from "../../../models/pagination";
 import { PaymentFilterModel } from "../models/paymentFilterModel";
 import paymentFilterHelper from "../utils/paymentFilterHelper";
-import reportFormatHelper from "../../../utils/reportFormatHelper";
 import { PaymentGridItemModel } from "../models/paymentGridItemModel";
+import numberHelper from "../../../utils/numberHelper";
+import dateHelper from "../../../utils/dateHelper";
 
 const filterHelper = paymentFilterHelper;
 
@@ -47,8 +48,8 @@ export default function PaymentGrid({ selectedPaymentId, filter, payments, pagin
                             {payments && (
                                 payments.map(p => (
                                     <tr key={p.paymentId} className={selectedPaymentId && selectedPaymentId === p.paymentId ? "selected" : ""}>
-                                        <td className="text-nowarp">
-                                            {p.formattedPaymentDate}
+                                        <td className="text-nowrap">
+                                            {dateHelper.formatDate(p.paymentDate)}
                                             {p.transferTo
                                                 ? <small className="ms-1">#{p.paymentId} / {p.transferTo.paymentId}</small>
                                                 : <small className="ms-1">#{p.paymentId}</small>
@@ -72,10 +73,10 @@ export default function PaymentGrid({ selectedPaymentId, filter, payments, pagin
                                             {p.personName}
                                         </td>
                                         <td className="text-nowrap text-end">
-                                            {reportFormatHelper.formatValueMarkIncome(p.value, p.formattedValue)}
+                                            {numberHelper.formatCurrency(p.valueFormat, p.value, "positive")}
 
                                             {p.transferTo && p.value !== -p.transferTo.value && (
-                                                <div><small>{p.transferTo.formattedValue}</small></div>
+                                                <div><small>{numberHelper.formatCurrency(p.transferTo.valueFormat, p.transferTo.value)}</small></div>
                                             )}
                                         </td>
                                         <td className="text-center">

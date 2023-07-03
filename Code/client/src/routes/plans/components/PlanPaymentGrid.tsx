@@ -4,9 +4,10 @@ import GridPagination from "../../../components/GridPagination";
 import LoadingPanel from "../../../components/LoadingPanel";
 import { PaginationData } from "../../../models/pagination";
 import planPaymentFilterHelper from "../utils/planPaymentFilterHelper";
-import reportFormatHelper from "../../../utils/reportFormatHelper";
 import { PlanPaymentGridItemModel } from "../models/planPaymentGridItemModel";
 import { PlanPaymentFilterModel } from "../models/planPaymentFilterModel";
+import dateHelper from "../../../utils/dateHelper";
+import numberHelper from "../../../utils/numberHelper";
 
 const filterHelper = planPaymentFilterHelper;
 
@@ -15,6 +16,15 @@ interface Props {
     filter?: PlanPaymentFilterModel;
     planPayments?: PlanPaymentGridItemModel[];
     paginationData?: PaginationData;
+}
+
+function getPaymentDateRange(model: PlanPaymentGridItemModel) {
+    const startDate = dateHelper.formatDate(model.paymentStartDate);
+    const endDate = model.paymentEndDate && dateHelper.formatDate(model.paymentEndDate);
+
+    return endDate
+        ? `${startDate} - ${endDate}`
+        : startDate;
 }
 
 export default function PlanPaymentGrid({ selectedPlanPaymentId, filter, planPayments, paginationData }: Props) {
@@ -47,8 +57,8 @@ export default function PlanPaymentGrid({ selectedPlanPaymentId, filter, planPay
                             {planPayments && (
                                 planPayments.map(p => (
                                     <tr key={p.planPaymentId} className={selectedPlanPaymentId && selectedPlanPaymentId === p.planPaymentId ? "selected" : ""}>
-                                        <td className="text-nowarp">
-                                            {p.formattedPaymentDateRange}
+                                        <td className="text-nowrap">
+                                            {getPaymentDateRange(p)}
                                             <small className="ms-1">#{p.planPaymentId}</small>
 
                                             <div>
@@ -75,7 +85,7 @@ export default function PlanPaymentGrid({ selectedPlanPaymentId, filter, planPay
                                             {p.personName}
                                         </td>
                                         <td className="text-nowrap text-end">
-                                            {reportFormatHelper.formatValueMarkIncome(p.value, p.formattedValue)}
+                                            {numberHelper.formatCurrency(p.valueFormat, p.value, "positive")}
                                         </td>
                                         <td className="text-center">
                                             {p.taxable && (

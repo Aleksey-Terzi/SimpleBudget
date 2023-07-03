@@ -1,12 +1,12 @@
 export interface PaymentGridItemModel {
     paymentId: number;
-    formattedPaymentDate: string;
+    paymentDate: string;
     companyName?: string;
     description?: string;
     categoryName?: string;
     walletName?: string;
     personName?: string;
-    formattedValue: string;
+    valueFormat: string;
     value: number;
     taxable: boolean;
     taxYear?: number;

@@ -102,13 +102,13 @@ namespace SimpleBudget.API
             return preItems.Select(x => new PaymentGridItemModel
             {
                 PaymentId = x.PaymentId,
-                FormattedPaymentDate = DateHelper.Format(x.PaymentDate)!,
+                PaymentDate = DateHelper.ToClient(x.PaymentDate)!,
                 CompanyName = x.CompanyName,
                 Description = x.Description,
                 CategoryName = x.CategoryName,
                 WalletName = x.WalletName,
                 PersonName = x.PersonName,
-                FormattedValue = string.Format(x.ValueFormat ?? "{0:n2}", Math.Abs(x.Value)),
+                ValueFormat = x.ValueFormat ?? "{0:n2}",
                 Value = x.Value,
                 Taxable = x.Taxable,
                 TaxYear = x.TaxYear,
@@ -139,7 +139,7 @@ namespace SimpleBudget.API
                 {
                     PaymentId = preItem.PaymentId,
                     WalletName = preItem.WalletName,
-                    FormattedValue = string.Format(preItem.ValueFormat ?? "{0:n2}", Math.Abs(preItem.Value)),
+                    ValueFormat = preItem.ValueFormat ?? "{0:n2}",
                     Value = preItem.Value
                 });
             }

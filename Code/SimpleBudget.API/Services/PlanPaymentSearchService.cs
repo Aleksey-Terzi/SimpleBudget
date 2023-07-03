@@ -72,15 +72,14 @@ namespace SimpleBudget.API
             return preItems.Select(x => new PlanPaymentGridItemModel
             {
                 PlanPaymentId = x.PlanPaymentId,
-                FormattedPaymentDateRange = x.PaymentEndDate.HasValue
-                    ? $"{DateHelper.Format(x.PaymentStartDate)!} - {DateHelper.Format(x.PaymentEndDate)!}"
-                    : DateHelper.Format(x.PaymentStartDate)!,
+                PaymentStartDate = DateHelper.ToClient(x.PaymentStartDate)!,
+                PaymentEndDate = DateHelper.ToClient(x.PaymentEndDate),
                 CompanyName = x.CompanyName,
                 Description = x.Description,
                 CategoryName = x.CategoryName,
                 WalletName = x.WalletName,
                 PersonName = x.PersonName,
-                FormattedValue = string.Format(x.ValueFormat ?? "{0:n2}", Math.Abs(x.Value)),
+                ValueFormat = x.ValueFormat ?? "{0:n2}",
                 Value = x.Value,
                 Taxable = x.Taxable,
                 TaxYear = x.TaxYear,
