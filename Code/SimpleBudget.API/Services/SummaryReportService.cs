@@ -37,10 +37,9 @@ namespace SimpleBudget.API
             {
                 WalletName = x.WalletName,
                 CurrencyCode = x.CurrencyCode,
-                ValueCAD = x.Value * x.Rate,
-                FormattedRate = FormatHelper.FormatRate(x.Rate),
-                FormattedValue = FormatHelper.FormatValue(x.Value, x.ValueFormat),
-                FormattedValueCAD = FormatHelper.FormatValue(x.Value * x.Rate, cad.ValueFormat),
+                Value = x.Value,
+                ValueFormat = x.ValueFormat,
+                Rate = x.Rate,
             }).ToList();
 
             model.Currencies = data
@@ -51,10 +50,9 @@ namespace SimpleBudget.API
                     return new SummaryCurrencyModel
                     {
                         CurrencyCode = x.Key.CurrencyCode,
-                        ValueCAD = value * x.Key.Rate,
-                        FormattedRate = FormatHelper.FormatRate(x.Key.Rate),
-                        FormattedValue = FormatHelper.FormatValue(value, x.Key.ValueFormat),
-                        FormattedValueCAD = FormatHelper.FormatValue(value * x.Key.Rate, cad.ValueFormat)
+                        Value = value,
+                        ValueFormat = x.Key.ValueFormat,
+                        Rate = x.Key.Rate,
                     };
                 }).ToList();
 
@@ -62,9 +60,7 @@ namespace SimpleBudget.API
             var tax = await _unpaidTaxService.CalculateUnpaidTaxAsync(TimeHelper.GetLocalTime().Year, null, null);
 
             model.TaxCAD = tax;
-            model.FormattedTotalValue = FormatHelper.FormatValue(totalValue, cad.ValueFormat);
-            model.FormattedTax = FormatHelper.FormatValue(tax, cad.ValueFormat);
-            model.FormattedTotalTaxDifference = FormatHelper.FormatValue(totalValue - tax, cad.ValueFormat);
+            model.ValueFormatCAD = cad.ValueFormat;
 
             return model;
         }

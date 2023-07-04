@@ -71,24 +71,9 @@ namespace SimpleBudget.API
             model.Categories.Sort((a, b) => a.CategoryName.CompareTo(b.CategoryName));
 
             foreach (var category in model.Categories)
-            {
                 category.NeedCAD = category.PlanCAD < category.MonthCAD ? 0 : category.MonthCAD - category.PlanCAD;
-                category.FormattedMonthCAD = string.Format(valueFormatCAD, category.MonthCAD);
-                category.FormattedPlanCAD = string.Format(valueFormatCAD, category.PlanCAD);
-                category.FormattedNeedCAD = string.Format(valueFormatCAD, -category.NeedCAD);
-                category.FormattedWeekCAD = string.Format(valueFormatCAD, category.WeekCAD);
-            }
 
-            model.FormattedTotalCategoryMonthCAD = string.Format(valueFormatCAD, model.Categories.Count > 0 ? model.Categories.Sum(x => x.MonthCAD) : 0);
-            model.FormattedTotalCategoryPlanCAD = string.Format(valueFormatCAD, model.Categories.Count > 0 ? model.Categories.Sum(x => x.PlanCAD) : 0);
-            model.FormattedTotalCategoryNeedCAD = string.Format(valueFormatCAD, model.Categories.Count > 0 ? -model.Categories.Sum(x => x.NeedCAD) : 0);
-            model.FormattedTotalCategoryWeekCAD = string.Format(valueFormatCAD, model.Categories.Count > 0 ? model.Categories.Sum(x => x.WeekCAD) : 0);
-            model.FormattedTotalWalletBeginningCAD = string.Format(valueFormatCAD, Math.Abs(model.Wallets.Count > 0 ? model.Wallets.Sum(x => x.BeginningCAD) : 0));
-            model.FormattedTotalWalletCurrentCAD = string.Format(valueFormatCAD, Math.Abs(model.Wallets.Count > 0 ? model.Wallets.Sum(x => x.CurrentCAD) : 0));
-            model.FormattedTotalWalletDiffCAD = string.Format(valueFormatCAD, Math.Abs(model.Wallets.Count > 0 ? model.Wallets.Sum(x => x.DiffCAD) : 0));
-            model.FormattedTotalSummaryBeginningCAD = string.Format(valueFormatCAD, Math.Abs(model.Summaries.Sum(x => x.BeginningCAD)));
-            model.FormattedTotalSummaryCurrentCAD = string.Format(valueFormatCAD, Math.Abs(model.Summaries.Sum(x => x.CurrentCAD)));
-            model.FormattedTotalSummaryDiffCAD = string.Format(valueFormatCAD, Math.Abs(model.Summaries.Sum(x => x.DiffCAD)));
+            model.ValueFormatCAD = valueFormatCAD;
         }
 
         private async Task AddReportMonthlyAsync(MonthlyModel model, string valueFormatCAD)
@@ -98,24 +83,16 @@ namespace SimpleBudget.API
             model.Wallets = data.Wallets.Select(x =>
             {
                 var current = x.Beginning + x.Income + x.Expenses;
-                var currentCAD = current * x.CurrentRate;
-                var beginningCAD = x.Beginning * x.BeginningRate;
-                var diffCAD = currentCAD - beginningCAD;
 
                 return new MonthlyWalletModel
                 {
                     WalletName = x.WalletName,
                     CurrencyCode = x.CurrencyCode,
-                    BeginningCAD = x.Beginning * x.BeginningRate,
-                    CurrentCAD = currentCAD,
-                    DiffCAD = diffCAD,
-                    FormattedBeginning = string.Format(x.ValueFormat, Math.Abs(x.Beginning)),
-                    FormattedBeginningCAD = string.Format(valueFormatCAD, Math.Abs(beginningCAD)),
-                    FormattedCurrent = string.Format(x.ValueFormat, Math.Abs(current)),
-                    FormattedCurrentCAD = string.Format(valueFormatCAD, Math.Abs(currentCAD)),
-                    FormattedDiffCAD = string.Format(valueFormatCAD, Math.Abs(diffCAD)),
-                    FormattedBeginningRate = $"{x.BeginningRate:####0.0000}",
-                    FormattedCurrentRate = $"{x.CurrentRate:####0.0000}"
+                    ValueFormat = x.ValueFormat,
+                    Beginning = x.Beginning,
+                    Current = current,
+                    BeginningRate = x.BeginningRate,
+                    CurrentRate = x.CurrentRate,
                 };
             }).ToList();
 
@@ -222,8 +199,6 @@ namespace SimpleBudget.API
         {
             var summary = await _reportSearch.SelectReportMonthlySummary(_identity.AccountId, model.SelectedYear, model.SelectedMonth);
 
-            var diff = summary.Current - summary.Beginning;
-
             model.Summaries = new List<MonthlySummaryModel>
             {
                 new MonthlySummaryModel
@@ -231,10 +206,6 @@ namespace SimpleBudget.API
                     Name = "All Wallets Total",
                     BeginningCAD = summary.Beginning,
                     CurrentCAD = summary.Current,
-                    DiffCAD = diff,
-                    FormattedBeginningCAD = string.Format(valueFormatCAD, Math.Abs(summary.Beginning)),
-                    FormattedCurrentCAD = string.Format(valueFormatCAD, Math.Abs(summary.Current)),
-                    FormattedDiffCAD = string.Format(valueFormatCAD, Math.Abs(diff)),
                 }
             };
         }
@@ -246,17 +217,12 @@ namespace SimpleBudget.API
 
             var current = - await _unpaidTaxService.CalculateUnpaidTaxAsync(currentMonth.Year, currentMonth.Month, currentMonth.AddMonths(1).AddDays(-1));
             var beginning = - await _unpaidTaxService.CalculateUnpaidTaxAsync(lastMonth.Year, lastMonth.Month, lastMonth.AddMonths(1).AddDays(-1));
-            var diff = current - beginning;
 
             model.Summaries.Add(new MonthlySummaryModel
             {
                 Name = "Unpaid Taxes",
                 BeginningCAD = beginning,
                 CurrentCAD = current,
-                DiffCAD = diff,
-                FormattedBeginningCAD = string.Format(valueFormatCAD, Math.Abs(beginning)),
-                FormattedCurrentCAD = string.Format(valueFormatCAD, Math.Abs(current)),
-                FormattedDiffCAD = string.Format(valueFormatCAD, Math.Abs(diff))
             });
         }
     }

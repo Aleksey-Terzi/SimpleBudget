@@ -73,10 +73,10 @@ export default function PaymentGrid({ selectedPaymentId, filter, payments, pagin
                                             {p.personName}
                                         </td>
                                         <td className="text-nowrap text-end">
-                                            {numberHelper.formatCurrency(p.valueFormat, p.value, "positive")}
+                                            {numberHelper.formatCurrency(p.value, p.valueFormat, "positive")}
 
                                             {p.transferTo && p.value !== -p.transferTo.value && (
-                                                <div><small>{numberHelper.formatCurrency(p.transferTo.valueFormat, p.transferTo.value)}</small></div>
+                                                <div><small>{numberHelper.formatCurrency(p.transferTo.value, p.transferTo.valueFormat)}</small></div>
                                             )}
                                         </td>
                                         <td className="text-center">

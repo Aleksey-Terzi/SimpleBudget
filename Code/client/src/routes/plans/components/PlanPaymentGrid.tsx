@@ -85,7 +85,7 @@ export default function PlanPaymentGrid({ selectedPlanPaymentId, filter, planPay
                                             {p.personName}
                                         </td>
                                         <td className="text-nowrap text-end">
-                                            {numberHelper.formatCurrency(p.valueFormat, p.value, "positive")}
+                                            {numberHelper.formatCurrency(p.value, p.valueFormat, "positive")}
                                         </td>
                                         <td className="text-center">
                                             {p.taxable && (

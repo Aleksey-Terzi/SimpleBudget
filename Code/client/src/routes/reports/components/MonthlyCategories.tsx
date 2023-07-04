@@ -1,16 +1,23 @@
 import { MonthlyCategoryModel, MonthlyModel } from "../models/monthlyModel";
-import reportFormatHelper from "../../../utils/reportFormatHelper";
+import numberHelper from "../../../utils/numberHelper";
 
 interface Props {
     report: MonthlyModel;
 }
 
 export default function MonthlyCategories({ report }: Props) {
-    const formatValue = reportFormatHelper.formatValue;
+    const formatCurrency = numberHelper.formatCurrency;
+    let totalMonthCAD = 0;
+    let totalPlanCAD = 0;
+    let totalNeedCAD = 0;
+    let totalWeekCAD = 0;
 
-    const totalNeedCAD = report.categories.length > 0
-        ? report.categories.reduce((a, b) => a + b.needCAD, 0)
-        : 0;
+    for (const category of report.categories) {
+        totalMonthCAD += category.monthCAD;
+        totalPlanCAD += category.planCAD;
+        totalNeedCAD += category.needCAD;
+        totalWeekCAD += category.weekCAD;
+    }
 
     function getPaymentUrl(item: MonthlyCategoryModel) {
         const text = encodeURIComponent(`year:${report.selectedYear} month:${report.selectedMonth} category:"${item.categoryName}"`);
@@ -36,35 +43,35 @@ export default function MonthlyCategories({ report }: Props) {
                         <td>
                             <a target="_blank" rel="noreferrer" href={getPaymentUrl(item)}>{item.categoryName}</a>
                         </td>
-                        <td className={`text-end${item.monthCAD === 0 ? " zero": ""}`}>
-                            {item.formattedMonthCAD}
+                        <td className="text-end">
+                            {formatCurrency(item.monthCAD, report.valueFormatCAD, "zero")}
                         </td>
-                        <td className={`text-end${item.planCAD === 0 ? " zero" : ""}`}>
-                            {item.formattedPlanCAD}
+                        <td className="text-end">
+                            {formatCurrency(item.planCAD, report.valueFormatCAD, "zero")}
                         </td>
-                        <td className={`text-end${item.needCAD === 0 ? " zero" : ""}`}>
-                            {formatValue(item.needCAD, item.formattedNeedCAD)}
+                        <td className="text-end">
+                            {formatCurrency(item.needCAD, report.valueFormatCAD, "zeroAndNegative")}
                         </td>
                         {report.showWeekly && (
                             <td className={`text-end${item.weekCAD === 0 ? " zero" : ""}`}>
-                                {item.formattedWeekCAD}
+                                {formatCurrency(item.weekCAD, report.valueFormatCAD)}
                             </td>
                         )}
                     </tr>
                 ))}
                 <tr>
                     <td colSpan={2} className="text-end">
-                        <strong>{report.formattedTotalCategoryMonthCAD}</strong>
+                        <strong>{formatCurrency(totalMonthCAD, report.valueFormatCAD)}</strong>
                     </td>
                     <td className="text-end">
-                        <strong>{report.formattedTotalCategoryPlanCAD}</strong>
+                        <strong>{formatCurrency(totalPlanCAD, report.valueFormatCAD)}</strong>
                     </td>
                     <td className="text-end">
-                        <strong>{formatValue(totalNeedCAD, report.formattedTotalCategoryNeedCAD)}</strong>
+                        <strong>{formatCurrency(totalNeedCAD, report.valueFormatCAD, "zeroAndNegative")}</strong>
                     </td>
                     {report.showWeekly && (
                         <td className="text-end">
-                            <strong>{report.formattedTotalCategoryWeekCAD}</strong>
+                            <strong>{formatCurrency(totalWeekCAD, report.valueFormatCAD)}</strong>
                         </td>
                     )}
                 </tr>

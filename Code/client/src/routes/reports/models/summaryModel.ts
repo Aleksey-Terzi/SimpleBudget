@@ -1,25 +1,21 @@
 export interface SummaryWalletModel {
     walletName: string;
     currencyCode: string;
-    valueCAD: number;
-    formattedRate: string;
-    formattedValue: string;
-    formattedValueCAD: string;
+    valueFormat: string;
+    value: number;
+    rate: number;
 }
 
 export interface SummaryCurrencyModel {
     currencyCode: string;
-    valueCAD: number;
-    formattedRate: string;
-    formattedValue: string;
-    formattedValueCAD: string;
+    valueFormat: string;
+    value: number;
+    rate: number;
 }
 
 export interface SummaryModel {
     wallets: SummaryWalletModel[];
     currencies: SummaryCurrencyModel[];
+    valueFormatCAD: string;
     taxCAD: number;
-    formattedTotalValue: string;
-    formattedTax: string;
-    formattedTotalTaxDifference: string;
 }

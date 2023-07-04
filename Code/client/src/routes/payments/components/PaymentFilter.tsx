@@ -147,7 +147,7 @@ export default function PaymentFilter({ filter }: Props) {
                         tabIndex={-1}
                     >
                         {calcSum && sum && sumFormat
-                            ? <>Sum: {numberHelper.formatCurrency(sumFormat, sum, "positiveAndNegative")}</>
+                            ? <>Sum: {numberHelper.formatCurrency(sum, sumFormat, "positiveAndNegative")}</>
                             : "Calc Sum"
                         }
                     </LoadingButton>

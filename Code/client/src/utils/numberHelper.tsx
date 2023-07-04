@@ -1,11 +1,14 @@
-type ApplyColor = "positiveAndNegative" | "positive" | "negative";
+type ApplyColor = "positiveAndNegative" | "positive" | "negative" | "zeroAndNegative" | "zero";
 
 const numberHelper = {
-    formatCurrency: (format: string, n?: number, applyColor?: ApplyColor) => {
-        if (!n) {
-            return null;
-        }
+    formatRate: (n: number, digits: number) => {
+        const rounder = Math.pow(10, digits);
+        const roundedNumber = Math.round(rounder * n) / rounder;
 
+        return roundedNumber.toFixed(digits);
+    },
+
+    formatCurrency: (n: number, format: string, applyColor?: ApplyColor) => {
         const startIndex = format.indexOf("{0");
         if (startIndex < 0) {
             throw new Error(`Wrong format: ${format}`);
@@ -16,7 +19,7 @@ const numberHelper = {
             throw new Error(`Wrong format: ${format}`);
         }
 
-        const formattedNumber = parseNumberFormat(format, n, startIndex, endIndex);
+        const [roundedNumber, formattedNumber] = parseNumberFormat(format, n, startIndex, endIndex);
 
         let result = startIndex > 0 ? format.substring(0, startIndex) : "";
         result += formattedNumber;
@@ -31,11 +34,15 @@ const numberHelper = {
 
         switch (applyColor) {
             case "positiveAndNegative":
-                return applyPositiveAndNegative(n, result);
+                return applyPositiveAndNegative(roundedNumber, result);
             case "positive":
-                return applyPositive(n, result);
+                return applyPositive(roundedNumber, result);
             case "negative":
-                return applyNegative(n, result);
+                return applyNegative(roundedNumber, result);
+            case "zeroAndNegative":
+                return applyZeroAndNegative(roundedNumber, result);
+            case "zero":
+                return applyZero(roundedNumber, result);
         }
     },
 
@@ -85,7 +92,23 @@ function applyNegative(n: number, formatted: string) {
         : formatted;
 }
 
-function parseNumberFormat(format: string, n: number, startIndex: number, endIndex: number) {
+function applyZeroAndNegative(n: number, formatted: string) {
+    if (n > 0) {
+        return formatted;
+    }
+
+    const className = n < 0 ? "text-danger" : "zero";
+
+    return <span className={className}>{formatted}</span>;
+}
+
+function applyZero(n: number, formatted: string) {
+    return n === 0
+        ? <span className="zero">{formatted}</span>
+        : formatted;
+}
+
+function parseNumberFormat(format: string, n: number, startIndex: number, endIndex: number): [number, string] {
     let digits: number;
 
     if (startIndex === endIndex - 2) {
@@ -100,8 +123,13 @@ function parseNumberFormat(format: string, n: number, startIndex: number, endInd
         }
     }
 
-    return Math.abs(n).toLocaleString("en-CA", {
+    const rounder = Math.pow(10, digits);
+    const roundedNumber = Math.round(rounder * n) / rounder;
+
+    const formattedNumber = Math.abs(roundedNumber).toLocaleString("en-CA", {
         minimumFractionDigits: digits,
         maximumFractionDigits: digits
     });
+
+    return [roundedNumber, formattedNumber];
 }

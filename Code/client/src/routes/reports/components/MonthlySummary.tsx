@@ -1,13 +1,12 @@
 import { MonthlyModel } from "../models/monthlyModel";
-import reportFormatHelper from "../../../utils/reportFormatHelper";
+import numberHelper from "../../../utils/numberHelper";
 
 interface Props {
     report: MonthlyModel;
 }
 
 export default function MonthlySummary({ report }: Props) {
-    const formatValue = reportFormatHelper.formatValue;
-
+    const formatCurrency = numberHelper.formatCurrency;
     let totalBeginningCAD = 0;
     let totalCurrentCAD = 0;
     let totalDiffCAD = 0;
@@ -15,7 +14,7 @@ export default function MonthlySummary({ report }: Props) {
     for (const item of report.summaries) {
         totalBeginningCAD += item.beginningCAD;
         totalCurrentCAD += item.currentCAD;
-        totalDiffCAD += item.diffCAD;
+        totalDiffCAD += item.currentCAD - item.beginningCAD;
     }
 
     return (
@@ -32,16 +31,16 @@ export default function MonthlySummary({ report }: Props) {
                 {report.summaries.map(item => (
                     <tr key={item.name}>
                         <td>{item.name}</td>
-                        <td className="text-end">{formatValue(item.beginningCAD, item.formattedBeginningCAD)}</td>
-                        <td className="text-end">{formatValue(item.currentCAD, item.formattedCurrentCAD)}</td>
-                        <td className="text-end">{formatValue(item.diffCAD, item.formattedDiffCAD)}</td>
+                        <td className="text-end">{formatCurrency(item.beginningCAD, report.valueFormatCAD, "positiveAndNegative")}</td>
+                        <td className="text-end">{formatCurrency(item.currentCAD, report.valueFormatCAD, "positiveAndNegative")}</td>
+                        <td className="text-end">{formatCurrency(item.currentCAD - item.beginningCAD, report.valueFormatCAD, "positiveAndNegative")}</td>
                     </tr>
                 ))}
                 <tr>
                     <td></td>
-                    <td className="text-end"><strong>{formatValue(totalBeginningCAD, report.formattedTotalSummaryBeginningCAD)}</strong></td>
-                    <td className="text-end"><strong>{formatValue(totalCurrentCAD, report.formattedTotalSummaryCurrentCAD)}</strong></td>
-                    <td className="text-end"><strong>{formatValue(totalDiffCAD, report.formattedTotalSummaryDiffCAD)}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalBeginningCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalCurrentCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalDiffCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
                 </tr>
             </tbody>
         </table>

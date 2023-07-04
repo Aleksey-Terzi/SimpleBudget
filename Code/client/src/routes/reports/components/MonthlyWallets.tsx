@@ -1,21 +1,21 @@
 import { MonthlyModel } from "../models/monthlyModel";
-import reportFormatHelper from "../../../utils/reportFormatHelper";
+import numberHelper from "../../../utils/numberHelper";
 
 interface Props {
     report: MonthlyModel;
 }
 
 export default function MonthlyWallets({ report }: Props) {
-    const formatValue = reportFormatHelper.formatValue;
-
+    const formatCurrency = numberHelper.formatCurrency;
+    const formatRate = numberHelper.formatRate;
     let totalBeginningCAD = 0;
     let totalCurrentCAD = 0;
     let totalDiffCAD = 0;
 
     for (const item of report.wallets) {
-        totalBeginningCAD += item.beginningCAD;
-        totalCurrentCAD += item.currentCAD;
-        totalDiffCAD += item.diffCAD;
+        totalBeginningCAD += item.beginning * item.beginningRate;
+        totalCurrentCAD += item.current * item.currentRate;
+        totalDiffCAD += totalCurrentCAD - totalBeginningCAD;
     }
 
     return (
@@ -33,29 +33,29 @@ export default function MonthlyWallets({ report }: Props) {
                     <tr key={item.walletName}>
                         <td>{item.walletName}</td>
                         <td className="text-end">
-                            {formatValue(item.beginningCAD, item.formattedBeginningCAD)}
+                            {formatCurrency(item.beginning * item.beginningRate, report.valueFormatCAD, "positiveAndNegative")}
 
                             {item.currencyCode.toLowerCase() !== "cad" && (
-                                <div><small>{item.formattedBeginningRate} @ {item.formattedBeginning}</small></div>
+                                <div><small>{formatRate(item.beginningRate, 4)} @ {formatCurrency(item.beginning, item.valueFormat)}</small></div>
                             )}
                         </td>
                         <td className="text-end">
-                            {formatValue(item.currentCAD, item.formattedCurrentCAD)}
+                            {formatCurrency(item.current * item.currentRate, report.valueFormatCAD, "positiveAndNegative")}
 
                             {item.currencyCode.toLowerCase() !== "cad" && (
-                                <div><small>{item.formattedCurrentRate} @ {item.formattedCurrent}</small></div>
+                                <div><small>{formatRate(item.currentRate, 4)} @ {formatCurrency(item.current, item.valueFormat)}</small></div>
                             )}
                         </td>
                         <td className="text-end">
-                            {formatValue(item.diffCAD, item.formattedDiffCAD)}
+                            {formatCurrency(item.current * item.currentRate - item.beginning * item.beginningRate, report.valueFormatCAD, "positiveAndNegative")}
                         </td>
                     </tr>
                 ))}
                 <tr>
                     <td></td>
-                    <td className="text-end"><strong>{formatValue(totalBeginningCAD, report.formattedTotalWalletBeginningCAD)}</strong></td>
-                    <td className="text-end"><strong>{formatValue(totalCurrentCAD, report.formattedTotalWalletCurrentCAD)}</strong></td>
-                    <td className="text-end"><strong>{formatValue(totalDiffCAD, report.formattedTotalWalletDiffCAD)}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalBeginningCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalCurrentCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
+                    <td className="text-end"><strong>{formatCurrency(totalDiffCAD, report.valueFormatCAD, "positiveAndNegative")}</strong></td>
                 </tr>
             </tbody>
         </table>

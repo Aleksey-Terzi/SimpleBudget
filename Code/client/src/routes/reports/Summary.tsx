@@ -5,7 +5,7 @@ import LoadingPanel from "../../components/LoadingPanel";
 import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 import { SummaryModel } from "./models/summaryModel";
-import reportFormatHelper from "../../utils/reportFormatHelper";
+import numberHelper from "../../utils/numberHelper";
 
 export default function Summary() {
     const [report, setReport] = useState<SummaryModel>();
@@ -14,7 +14,8 @@ export default function Summary() {
     const deductTaxes = searchParams.get("deduct") !== "0";
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const formatValue = reportFormatHelper.formatValue;
+    const formatCurrency = numberHelper.formatCurrency;
+    const formatRate = numberHelper.formatRate;
 
     useEffect(() => {
         setLoading(true);
@@ -34,15 +35,17 @@ export default function Summary() {
     let total: JSX.Element | undefined;
 
     if (report) {
-        const totalValue = report.wallets.reduce((a, b) => a + b.valueCAD, 0);
+        const totalValue = report.wallets.reduce((a, b) => a + b.value * b.rate, 0);
+        const formattedTotal = formatCurrency(totalValue, report.valueFormatCAD, "positiveAndNegative");
 
         if (deductTaxes) {
-            const formattedTotal = formatValue(totalValue, report.formattedTotalValue);
-            const formattedDiff = formatValue(totalValue - report.taxCAD, report.formattedTotalTaxDifference);
+            const diff = totalValue - report.taxCAD;
+            const formattedDiff = formatCurrency(diff, report.valueFormatCAD, "positiveAndNegative");
+            const formattedTax = formatCurrency(report.taxCAD, report.valueFormatCAD);
 
-            total = <strong>{formattedTotal} - {report.formattedTax} = {formattedDiff}</strong>;
+            total = <strong>{formattedTotal} - {formattedTax} = {formattedDiff}</strong>;
         } else {
-            total = <strong>{formatValue(totalValue, report.formattedTotalValue)}</strong>;
+            total = <strong>{formattedTotal}</strong>;
         }
     }
 
@@ -78,9 +81,9 @@ export default function Summary() {
                                             <tr key={item.walletName}>
                                                 <td>{item.walletName}</td>
                                                 <td className="text-center">{item.currencyCode}</td>
-                                                <td className="text-end">{formatValue(item.valueCAD, item.formattedValue)}</td>
-                                                <td className="text-end">{item.formattedRate}</td>
-                                                <td className="text-end">{formatValue(item.valueCAD, item.formattedValueCAD)}</td>
+                                                <td className="text-end">{formatCurrency(item.value, item.valueFormat, "positiveAndNegative")}</td>
+                                                <td className="text-end">{formatRate(item.rate, 4)}</td>
+                                                <td className="text-end">{formatCurrency(item.value * item.rate, report.valueFormatCAD, "positiveAndNegative")}</td>
                                             </tr>
                                         ))}
 
@@ -106,9 +109,9 @@ export default function Summary() {
                                         {report.currencies.map(item => (
                                             <tr key={item.currencyCode}>
                                                 <td>{item.currencyCode}</td>
-                                                <td className="text-end">{formatValue(item.valueCAD, item.formattedValue)}</td>
-                                                <td className="text-end">{item.formattedRate}</td>
-                                                <td className="text-end">{formatValue(item.valueCAD, item.formattedValueCAD)}</td>
+                                                <td className="text-end">{formatCurrency(item.value, item.valueFormat, "positiveAndNegative")}</td>
+                                                <td className="text-end">{formatRate(item.rate, 4)}</td>
+                                                <td className="text-end">{formatCurrency(item.value * item.rate, report.valueFormatCAD, "positiveAndNegative")}</td>
                                             </tr>
                                         ))}
 
