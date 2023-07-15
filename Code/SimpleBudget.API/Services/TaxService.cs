@@ -97,13 +97,13 @@ namespace SimpleBudget.API
             {
                 Year = _model.SelectedYear,
                 PersonId = _model.SelectedPersonId.Value,
-                FinalTaxAmount = _model.TaxPaidTotalCAD,
+                FinalTaxAmount = _model.TaxItems.Sum(x => x.ValuePaidCAD),
                 Closed = closed
             };
 
             await _taxYearStore.Insert(taxYearEntity);
 
-            _model.FormattedClosed = await GetClosed();
+            _model.Closed = await GetClosed();
 
             return _model;
         }
@@ -120,7 +120,7 @@ namespace SimpleBudget.API
             {
                 await _taxYearStore.Delete(taxYearEntity);
 
-                _model.FormattedClosed = await GetClosed();
+                _model.Closed = await GetClosed();
             }
 
             return _model;
@@ -137,7 +137,7 @@ namespace SimpleBudget.API
             _limitTaxPaymentDate = limitTaxPaymentDate;
 
             await LoadBasicDataAsync(selectedPersonId, selectedYear, limitMonth);
-            await LoadIncomesAsync(cad.ValueFormat);
+            await LoadIncomesAsync();
 
             _cpp = await LoadDeductionAsync(Constants.Tax.CPP, Constants.Tax.CPPBasicExemptionAmount, Constants.Company.CPP) ?? new DeductionItem();
             _ei = await LoadDeductionAsync(Constants.Tax.EI, null, Constants.Company.EI);
@@ -151,23 +151,24 @@ namespace SimpleBudget.API
             CalculateIncomeTax(_federalTax);
             CalculateIncomeTax(_provinceTax);
 
-            LoadTaxItems(cad.ValueFormat);
+            LoadTaxItems();
 
             var now = TimeHelper.GetLocalTime();
             _model.CanOpen = _model.SelectedYear == now.Year || _model.SelectedYear == now.Year - 1;
 
-            _model.FormattedClosed = await GetClosed();
+            _model.Closed = await GetClosed();
+            _model.ValueFormatCAD = cad.ValueFormat;
 
             return _model;
         }
 
         private async Task<string?> GetClosed()
         {
-            var closed = (await _taxYearSearch.SelectFirst(x => x.PersonId == _model.SelectedPersonId && x.Year == _model.SelectedYear))?.Closed;
-            return closed.HasValue ? $"{closed:MMM d, yyyy}" : null;
+            var taxYear = await _taxYearSearch.SelectFirst(x => x.PersonId == _model.SelectedPersonId && x.Year == _model.SelectedYear);
+            return DateHelper.ToClient(taxYear?.Closed);
         }
 
-        private void LoadTaxItems(string valueFormatCAD)
+        private void LoadTaxItems()
         {
             _model.TaxItems = new List<TaxItemModel>
             {
@@ -177,27 +178,13 @@ namespace SimpleBudget.API
                 CreateItem("Provincial Tax", _provinceTax.Estimated, _provinceTax.Paid),
             };
 
-            _model.TaxTotalCAD = _model.TaxItems.Sum(x => x.ValueCAD);
-            _model.TaxPaidTotalCAD = _model.TaxItems.Sum(x => x.ValuePaidCAD);
-            _model.TaxDiffTotalCAD = _model.TaxItems.Sum(x => x.DiffCAD);
-
-            _model.FormattedTaxTotalCAD = string.Format(valueFormatCAD, _model.TaxTotalCAD);
-            _model.FormattedTaxPaidTotalCAD = string.Format(valueFormatCAD, _model.TaxPaidTotalCAD);
-            _model.FormattedTaxDiffTotalCAD = string.Format(valueFormatCAD, Math.Abs(_model.TaxDiffTotalCAD));
-
             TaxItemModel CreateItem(string name, decimal estimated, decimal paid)
             {
-                var diffCAD = paid - estimated;
-
                 return new TaxItemModel
                 {
                     Name = name,
                     ValueCAD = estimated,
-                    ValuePaidCAD = paid,
-                    DiffCAD = diffCAD,
-                    FormattedValueCAD = string.Format(valueFormatCAD, estimated),
-                    FormattedValuePaidCAD = string.Format(valueFormatCAD, paid),
-                    FormattedDiffCAD = string.Format(valueFormatCAD, Math.Abs(diffCAD))
+                    ValuePaidCAD = paid
                 };
             }
         }
@@ -254,14 +241,7 @@ namespace SimpleBudget.API
         {
             _limitMonth = limitMonth;
 
-            var currentYear = TimeHelper.GetLocalTime().Year;
-
-            _model.Years = new List<int>();
-            if (currentYear > 2020)
-                _model.Years.Add(currentYear - 1);
-
-            _model.Years.Add(currentYear);
-
+            _model.Years = await GetTaxYears();
             _model.SelectedYear = selectedYear ?? _model.Years[0];
 
             _model.Persons = (await _personSearch.Bind(
@@ -286,7 +266,19 @@ namespace SimpleBudget.API
             }
         }
 
-        private async Task LoadIncomesAsync(string valueFormatCAD)
+        private async Task<List<int>> GetTaxYears()
+        {
+            var currentYear = TimeHelper.GetLocalTime().Year;
+            var minYear = await _taxYearSearch.MinYear(_identity.AccountId) ?? currentYear;
+            var result = new List<int>();
+
+            for (var year = currentYear; year >= minYear; year--)
+                result.Add(year);
+
+            return result;
+        }
+
+        private async Task LoadIncomesAsync()
         {
             if (_model.SelectedPersonId == null)
             {
@@ -323,22 +315,16 @@ namespace SimpleBudget.API
             _model.Incomes = incomes.Select(x => new TaxIncomeModel
             {
                 PaymentId = x.PaymentId,
-                PaymentDate = x.PaymentDate,
+                PaymentDate = DateHelper.ToClient(x.PaymentDate)!,
                 CompanyName = x.CompanyName,
                 Description = x.Description,
                 CategoryName = x.CategoryName,
                 WalletName = x.WalletName,
                 CurrencyCode = x.CurrencyCode,
-                ValueCAD = x.Rate * x.Value,
+                Value = x.Value,
                 Rate = x.Rate,
-                FormattedPaymentDate = $"{x.PaymentDate:MMM d, yyyy}",
-                FormattedValue = string.Format(x.ValueFormat, x.Value),
-                FormattedValueCAD = string.Format(valueFormatCAD, x.Rate * x.Value),
-                FormattedRate = $"{x.Rate:####0.0000}"
+                ValueFormat = x.ValueFormat
             }).ToList();
-
-            _model.IncomeTotalCAD = _model.Incomes.Count > 0 && !_model.Incomes.Any(x => x.Rate == 0) ? _model.Incomes.Sum(x => x.ValueCAD) : 0;
-            _model.FormattedIncomeTotalCAD = string.Format(valueFormatCAD, _model.IncomeTotalCAD);
         }
 
         private async Task<DeductionItem> LoadDeductionAsync(string name, string? exemptionAmountName, string company)
@@ -418,7 +404,9 @@ namespace SimpleBudget.API
 
         private void LoadEstimatedYearIncome()
         {
-            _income = _model.IncomeTotalCAD;
+            _income = _model.Incomes.Count > 0 && !_model.Incomes.Any(x => x.Rate == 0)
+                ? _model.Incomes.Sum(x => x.Value * x.Rate)
+                : 0;
 
             if (_income > 0)
             {
@@ -426,7 +414,7 @@ namespace SimpleBudget.API
                 var currentMonth = _limitMonth ?? (_model.SelectedYear == now.Year ? now.Month : 12);
                 var incomeMonths = currentMonth;
 
-                if (_model.Incomes.FirstOrDefault(x => x.PaymentDate.Month == currentMonth) == null)
+                if (_model.Incomes.FirstOrDefault(x => DateHelper.ToServer(x.PaymentDate)!.Value.Month == currentMonth) == null)
                     incomeMonths--;
 
                 _estimatedYearIncome = 12 * _income / incomeMonths;

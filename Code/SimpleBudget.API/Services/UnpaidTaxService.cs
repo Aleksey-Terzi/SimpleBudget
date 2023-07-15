@@ -50,7 +50,10 @@ namespace SimpleBudget.API
 
             var taxes = await _taxService.CreateModelAsync(personId, year, limitMonth, limitTaxPaymentDate);
 
-            return taxes.TaxTotalCAD > taxes.TaxPaidTotalCAD ? taxes.TaxTotalCAD - taxes.TaxPaidTotalCAD : 0;
+            var taxTotalCAD = taxes.TaxItems.Sum(x => x.ValueCAD);
+            var taxPaidTotalCAD = taxes.TaxItems.Sum(x => x.ValuePaidCAD);
+
+            return taxTotalCAD > taxPaidTotalCAD ? taxTotalCAD - taxPaidTotalCAD : 0;
         }
     }
 }

@@ -130,7 +130,7 @@ export default function Tax() {
                                 <TaxList model={model} />
 
                                 <div className="pt-4 text-end">
-                                    {!model.formattedClosed && (
+                                    {!model.closed && (
                                         <LoadingButton
                                             variant="danger"
                                             loading={submitting}
@@ -139,7 +139,7 @@ export default function Tax() {
                                             onClick={handleCloseYear}
                                         />
                                     )}
-                                    {model.formattedClosed && model.canOpen && (
+                                    {model.closed && model.canOpen && (
                                         <LoadingButton
                                             variant="warning"
                                             loading={submitting}

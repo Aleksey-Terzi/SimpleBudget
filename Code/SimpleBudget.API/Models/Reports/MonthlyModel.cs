@@ -10,7 +10,6 @@
         public List<MonthlyCategoryModel> Categories { get; set; } = default!;
         public List<MonthlySummaryModel> Summaries { get; set; } = default!;
         public List<int> Years { get; set; } = default!;
-        public List<string> MonthNames { get; set; } = default!;
 
         public string ValueFormatCAD { get; set; } = default!;
     }

@@ -1,4 +1,5 @@
-import reportFormatHelper from "../../../utils/reportFormatHelper";
+import dateHelper from "../../../utils/dateHelper";
+import numberHelper from "../../../utils/numberHelper";
 import { TaxModel } from "../models/taxModel";
 
 interface Props {
@@ -6,7 +7,15 @@ interface Props {
 }
 
 export default function TaxList({ model }: Props) {
-    const formatValue = reportFormatHelper.formatValue;
+    const formatCurrency = numberHelper.formatCurrency;
+
+    const incomeTotalCAD = model.incomes.length > 0
+        ? model.incomes.reduce((a, b) => a + b.value * b.rate, 0)
+        : 0;
+
+    const taxTotalCAD = model.taxItems.reduce((a, b) => a + b.valueCAD, 0);
+    const taxPaidTotalCAD = model.taxItems.reduce((a, b) => a + b.valuePaidCAD, 0);
+    const taxDiffTotalCAD = taxPaidTotalCAD - taxTotalCAD;
 
     return (
         <>
@@ -23,27 +32,27 @@ export default function TaxList({ model }: Props) {
                     {model.taxItems.map(item => (
                         <tr key={item.name}>
                             <td>{item.name}</td>
-                            <td className="text-end">{item.formattedValueCAD}</td>
-                            <td className="text-end">{item.formattedValuePaidCAD}</td>
-                            <td className="text-end">{formatValue(item.diffCAD, item.formattedDiffCAD)}</td>
+                            <td className="text-end">{formatCurrency(item.valueCAD, model.valueFormatCAD)}</td>
+                            <td className="text-end">{formatCurrency(item.valuePaidCAD, model.valueFormatCAD)}</td>
+                            <td className="text-end">{formatCurrency(item.valuePaidCAD - item.valueCAD, model.valueFormatCAD, "positiveAndNegative")}</td>
                         </tr>
                     ))}
                     <tr>
                         <td></td>
-                        <td className="text-end"><strong>{model.formattedTaxTotalCAD}</strong></td>
-                        <td className="text-end"><strong>{model.formattedTaxPaidTotalCAD}</strong></td>
-                        <td className="text-end"><strong>{formatValue(model.taxDiffTotalCAD, model.formattedTaxDiffTotalCAD)}</strong></td>
+                        <td className="text-end"><strong>{formatCurrency(taxTotalCAD, model.valueFormatCAD)}</strong></td>
+                        <td className="text-end"><strong>{formatCurrency(taxPaidTotalCAD, model.valueFormatCAD)}</strong></td>
+                        <td className="text-end"><strong>{formatCurrency(taxDiffTotalCAD, model.valueFormatCAD, "positiveAndNegative")}</strong></td>
                     </tr>
                 </tbody>
             </table>
 
             <div className="text-end">
-                Taxable Income: <strong>{model.formattedIncomeTotalCAD}</strong>
+                Taxable Income: <strong>{formatCurrency(incomeTotalCAD, model.valueFormatCAD)}</strong>
             </div>
 
-            {model.formattedClosed && (
+            {model.closed && (
                 <div className="text-end mt-2">
-                    Closed: <b>{model.formattedClosed}</b>
+                    Closed: <b>{dateHelper.formatDate(model.closed)}</b>
                 </div>
             )}
         </>

@@ -45,15 +45,11 @@ namespace SimpleBudget.API
             {
                 SelectedYear = year ?? now.Year,
                 SelectedMonth = month ?? now.Month,
-                Years = new List<int>(),
-                MonthNames = new List<string>()
+                Years = new List<int>()
             };
 
             for (int i = 2020; i <= now.Year; i++)
                 model.Years.Add(i);
-
-            for (int i = 1; i <= 12; i++)
-                model.MonthNames.Add($"{new DateTime(2020, i, 1):MMMM}");
 
             await AddReportMonthlyAsync(model, cad.ValueFormat);
             await AddReportWeeklyAsync(model);

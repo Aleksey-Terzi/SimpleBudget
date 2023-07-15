@@ -30,6 +30,5 @@ export interface MonthlyModel {
     categories: MonthlyCategoryModel[];
     summaries: MonthlySummaryModel[];
     years: number[];
-    monthNames: string[];
     valueFormatCAD: string;
 }

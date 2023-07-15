@@ -1,22 +1,20 @@
 export interface TaxIncomeModel {
     paymentId: number;
+    paymentDate: string;
     companyName: string;
     description: string;
     categoryName: string;
     walletName: string;
     currencyCode: string;
-    formattedPaymentDate: string;
-    formattedValue: string;
-    formattedValueCAD: string;
-    formattedRate: string;
+    rate: number;
+    value: number;
+    valueFormat: string;
 }
 
 export interface TaxItemModel {
     name: string;
-    diffCAD: number;
-    formattedValueCAD: string;
-    formattedValuePaidCAD: string;
-    formattedDiffCAD: string;
+    valueCAD: number;
+    valuePaidCAD: number;
 }
 
 export interface TaxPersonModel {
@@ -32,10 +30,6 @@ export interface TaxModel {
     selectedPersonId: number;
     selectedYear: number;
     canOpen: boolean;
-    taxDiffTotalCAD: number;
-    formattedIncomeTotalCAD: string;
-    formattedTaxTotalCAD: string;
-    formattedTaxPaidTotalCAD: string;
-    formattedTaxDiffTotalCAD: string;
-    formattedClosed?: string;
+    closed?: string;
+    valueFormatCAD: string;
 }

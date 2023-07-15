@@ -11,16 +11,8 @@
         public int SelectedYear { get; set; }
         public bool CanOpen { get; set; }
 
-        public decimal IncomeTotalCAD { get; set; }
-        public decimal TaxTotalCAD { get; set; }
-        public decimal TaxPaidTotalCAD { get; set; }
-        public decimal TaxDiffTotalCAD { get; set; }
+        public string? Closed { get; set; }
 
-        public string FormattedIncomeTotalCAD { get; set; } = default!;
-        public string FormattedTaxTotalCAD { get; set; } = default!;
-        public string FormattedTaxPaidTotalCAD { get; set; } = default!;
-        public string FormattedTaxDiffTotalCAD { get; set; } = default!;
-
-        public string? FormattedClosed { get; set; }
+        public string ValueFormatCAD { get; set; } = default!;
     }
 }

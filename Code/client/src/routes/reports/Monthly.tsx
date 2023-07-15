@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Card, Col, Form, Row } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LoadingPanel from "../../components/LoadingPanel";
+import dateHelper from "../../utils/dateHelper";
 import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 import MonthlyCategories from "./components/MonthlyCategories";
@@ -79,7 +80,7 @@ export default function Monthly() {
                                     defaultValue={report.selectedMonth}
                                     onChange={handleDateChange}
                                 >
-                                    {report.monthNames.map((monthName, index) => (
+                                    {dateHelper.monthNames.map((monthName, index) => (
                                         <option key={monthName} value={index + 1}>
                                             {monthName}
                                         </option>

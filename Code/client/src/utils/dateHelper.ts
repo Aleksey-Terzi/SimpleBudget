@@ -1,4 +1,19 @@
 const dateHelper = {
+    monthNames: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ],
+
     dateToString: (d: Date) => {
         return d.toLocaleDateString("en-CA");
     },
