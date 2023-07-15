@@ -64,7 +64,7 @@ namespace SimpleBudget.API
             var text = HttpUtility.UrlDecode(input.Text);
 
             var filter = new PaymentFilter();
-            FilterHelper.CreateFilter(_identity.AccountId, input.Type, text, filter);
+            FilterHelper.CreateFilter(_identity.AccountId, input.Type, text, filter, _identity.TimeHelper);
             return filter;
         }
 

@@ -39,7 +39,7 @@ namespace SimpleBudget.API
             if (cad == null)
                 throw new ArgumentException($"CAD currency is not found");
 
-            var now = TimeHelper.GetLocalTime();
+            var now = _identity.TimeHelper.GetLocalTime();
 
             var model = new MonthlyModel
             {

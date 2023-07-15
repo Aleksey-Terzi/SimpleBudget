@@ -57,15 +57,15 @@ namespace SimpleBudget.API
             return page.Value > 0 ? page.Value : 1;
         }
 
-        public static void CreateFilter(int accountId, string? type, string? text, IPaymentFilter filter)
+        public static void CreateFilter(int accountId, string? type, string? text, IPaymentFilter filter, TimeHelper timeHelper)
         {
             filter.AccountId = accountId;
             filter.Type = type;
 
-            ParseText(text, filter);
+            ParseText(text, filter, timeHelper);
         }
 
-        private static void ParseText(string? text, IPaymentFilter filter)
+        private static void ParseText(string? text, IPaymentFilter filter, TimeHelper timeHelper)
         {
             if (string.IsNullOrWhiteSpace(text))
                 return;
@@ -111,13 +111,13 @@ namespace SimpleBudget.API
                         if (index < text.Length)
                             index++;
 
-                        SetFilterItem(token, value, filter);
+                        SetFilterItem(token, value, filter, timeHelper);
                     }
                 }
             }
         }
 
-        private static void SetFilterItem(string? name, string? value, IPaymentFilter filter)
+        private static void SetFilterItem(string? name, string? value, IPaymentFilter filter, TimeHelper timeHelper)
         {
             if (string.Equals(name, "year", StringComparison.OrdinalIgnoreCase))
             {
@@ -135,7 +135,13 @@ namespace SimpleBudget.API
             }
             else if (string.Equals(name, "status", StringComparison.OrdinalIgnoreCase) && filter is PlanPaymentFilter planFilter)
             {
-                planFilter.IsActive = string.Equals(value, "active", StringComparison.OrdinalIgnoreCase);
+                var isActive = string.Equals(value, "active", StringComparison.OrdinalIgnoreCase);
+                var now = timeHelper.GetLocalTime();
+
+                if (isActive)
+                    planFilter.ActiveAtNow = now;
+                else
+                    planFilter.InactiveAtNow = now;
             }
             else
             {

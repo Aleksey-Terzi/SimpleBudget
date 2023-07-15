@@ -2,21 +2,23 @@
 using Microsoft.AspNetCore.Mvc;
 
 using SimpleBudget.API.Models;
-using SimpleBudget.Data;
 
 namespace SimpleBudget.API.Controllers
 {
     [Authorize]
     public class ReportsController : BaseApiController
     {
+        private readonly IdentityService _identity;
         private readonly SummaryReportService _summaryReportService;
         private readonly MonthlyReportService _monthlyReportService;
 
         public ReportsController(
+            IdentityService identity,
             SummaryReportService summaryReportService,
             MonthlyReportService monthlyReportService
             )
         {
+            _identity = identity;
             _summaryReportService = summaryReportService;
             _monthlyReportService = monthlyReportService;
         }
@@ -30,7 +32,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("monthly")]
         public async Task<ActionResult<MonthlyModel>> GetMonthly(string? year, string? month)
         {
-            var now = TimeHelper.GetLocalTime();
+            var now = _identity.TimeHelper.GetLocalTime();
 
             if (!int.TryParse(year, out var yearInt) || yearInt < 2010 || yearInt > 2050)
                 yearInt = now.Year;

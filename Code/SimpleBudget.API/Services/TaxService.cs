@@ -153,7 +153,7 @@ namespace SimpleBudget.API
 
             LoadTaxItems();
 
-            var now = TimeHelper.GetLocalTime();
+            var now = _identity.TimeHelper.GetLocalTime();
             _model.CanOpen = _model.SelectedYear == now.Year || _model.SelectedYear == now.Year - 1;
 
             _model.Closed = await GetClosed();
@@ -268,7 +268,7 @@ namespace SimpleBudget.API
 
         private async Task<List<int>> GetTaxYears()
         {
-            var currentYear = TimeHelper.GetLocalTime().Year;
+            var currentYear = _identity.TimeHelper.GetLocalTime().Year;
             var minYear = await _taxYearSearch.MinYear(_identity.AccountId) ?? currentYear;
             var result = new List<int>();
 
@@ -410,7 +410,7 @@ namespace SimpleBudget.API
 
             if (_income > 0)
             {
-                var now = TimeHelper.GetLocalTime();
+                var now = _identity.TimeHelper.GetLocalTime();
                 var currentMonth = _limitMonth ?? (_model.SelectedYear == now.Year ? now.Month : 12);
                 var incomeMonths = currentMonth;
 

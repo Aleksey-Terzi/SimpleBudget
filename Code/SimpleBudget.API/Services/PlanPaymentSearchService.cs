@@ -21,7 +21,7 @@ namespace SimpleBudget.API
             input.Text = HttpUtility.UrlDecode(input.Text);
 
             var filter = new PlanPaymentFilter();
-            FilterHelper.CreateFilter(_identity.AccountId, input.Type, input.Text, filter);
+            FilterHelper.CreateFilter(_identity.AccountId, input.Type, input.Text, filter, _identity.TimeHelper);
 
             var itemCount = await _planPaymentSearch.Count(filter);
 
@@ -67,7 +67,7 @@ namespace SimpleBudget.API
                     .Take(FilterHelper.PageSize)
             );
 
-            var now = TimeHelper.GetLocalTime();
+            var now = _identity.TimeHelper.GetLocalTime();
 
             return preItems.Select(x => new PlanPaymentGridItemModel
             {

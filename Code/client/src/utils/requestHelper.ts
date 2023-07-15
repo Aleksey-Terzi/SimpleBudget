@@ -19,10 +19,11 @@ axios.defaults.withCredentials = true;
 
 axios.interceptors.request.use(config => {
     const token = userHelper.getUser()?.token;
-
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    config.headers["X-Time-Zone-Offset"] = new Date().getTimezoneOffset();
 
     return config;
 })

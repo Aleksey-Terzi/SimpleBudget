@@ -116,11 +116,16 @@ namespace SimpleBudget.Data
             if (!string.IsNullOrEmpty(filter.Category))
                 result = result.Where(x => x.Category.Name == filter.Category);
 
-            if (filter.IsActive.HasValue)
+            if (filter.ActiveAtNow.HasValue)
             {
-                var now = TimeHelper.GetLocalTime();
-                var thisMonth = new DateTime(now.Year, now.Month, 1);
-                result = result.Where(x => x.IsActive == filter.IsActive && (x.PaymentEndDate == null || x.PaymentEndDate >= thisMonth));
+                var thisMonth = new DateTime(filter.ActiveAtNow.Value.Year, filter.ActiveAtNow.Value.Month, 1);
+                result = result.Where(x => x.IsActive && (x.PaymentEndDate == null || x.PaymentEndDate >= thisMonth));
+            }
+
+            if (filter.InactiveAtNow.HasValue)
+            {
+                var thisMonth = new DateTime(filter.InactiveAtNow.Value.Year, filter.InactiveAtNow.Value.Month, 1);
+                result = result.Where(x => !x.IsActive && (x.PaymentEndDate == null || x.PaymentEndDate >= thisMonth));
             }
 
             return result;

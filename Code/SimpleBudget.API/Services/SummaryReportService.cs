@@ -57,7 +57,7 @@ namespace SimpleBudget.API
                 }).ToList();
 
             var totalValue = data.Count > 0 ? data.Sum(x => x.Value * x.Rate) : 0;
-            var tax = await _unpaidTaxService.CalculateUnpaidTaxAsync(TimeHelper.GetLocalTime().Year, null, null);
+            var tax = await _unpaidTaxService.CalculateUnpaidTaxAsync(_identity.TimeHelper.GetLocalTime().Year, null, null);
 
             model.TaxCAD = tax;
             model.ValueFormatCAD = cad.ValueFormat;

@@ -8,6 +8,7 @@
         public int? PaymentYear { get; set; }
         public int? PaymentMonth { get; set; }
         public string? Category { get; set; }
-        public bool? IsActive { get; set; }
+        public DateTime? ActiveAtNow { get; set; }
+        public DateTime? InactiveAtNow { get; set; }
     }
 }
