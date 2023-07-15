@@ -1,6 +1,11 @@
 type ApplyColor = "positiveAndNegative" | "positive" | "negative" | "zeroAndNegative" | "zero";
 
 const numberHelper = {
+    formatPercent: (rate: number) => {
+        const roundedPercent = Math.round(rate * 10000) / 100;
+        return roundedPercent.toFixed(2) + "%";
+    },
+
     formatRate: (n: number, digits: number) => {
         const rounder = Math.pow(10, digits);
         const roundedNumber = Math.round(rounder * n) / rounder;

@@ -60,7 +60,6 @@ namespace SimpleBudget.API
             {
                 CurrencyRateId = x.CurrencyRateId,
                 StartDate = DateHelper.ToClient(x.StartDate)!,
-                FormattedStartDate = DateHelper.Format(x.StartDate)!,
                 Rate = x.Rate,
                 BankOfCanada = x.BankOfCanada
             })

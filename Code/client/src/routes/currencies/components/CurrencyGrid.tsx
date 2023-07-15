@@ -1,6 +1,7 @@
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import LoadingPanel from "../../../components/LoadingPanel";
+import dateHelper from "../../../utils/dateHelper";
 import { CurrencyGridModel } from "../models/currencyGridModel";
 
 interface Props {
@@ -46,13 +47,13 @@ export default function CurrencyGrid({ items, loading }: Props) {
                                     <td className="text-end">
                                         {(item.marketRate || 1).toFixed(4)}
                                         <div className="form-text">
-                                            {item.marketStartDate}
+                                            {item.marketStartDate && dateHelper.formatDate(item.marketStartDate)}
                                         </div>
                                     </td>
                                     <td className="text-end">
                                         {(item.bankRate || 1).toFixed(4)}
                                         <div className="form-text">
-                                            {item.bankStartDate}
+                                            {item.bankStartDate && dateHelper.formatDate(item.bankStartDate)}
                                         </div>
                                     </td>
                                     <td className="text-end">

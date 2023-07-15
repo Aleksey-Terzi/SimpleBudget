@@ -67,7 +67,6 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
         newItems.splice(0, 0, {
             currencyRateId: -1,
             startDate: dateHelper.dateToString(new Date()),
-            formattedStartDate: "",
             rate: 0,
             bankOfCanada: false
         });
@@ -207,7 +206,7 @@ export default function CurrencyRatingGrid({ currencyId }: Props) {
                                                     title={errors.startDate?.message as string}
                                                     {...register("startDate")}
                                                 />
-                                            ): <>{p.formattedStartDate}</>}
+                                            ) : <>{dateHelper.formatDate(p.startDate)}</>}
                                         </td>
                                         <td className="text-end">
                                             {editedId === p.currencyRateId ? (

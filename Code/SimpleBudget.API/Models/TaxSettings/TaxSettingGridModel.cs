@@ -3,13 +3,13 @@
     public class TaxSettingGridModel
     {
         public int Year { get; set; }
-        public string? CPPRateFormatted { get; set; }
-        public string? CPPMaxAmountFormatted { get; set; }
-        public string? EIRateFormatted { get; set; }
-        public string? EIMaxAmountFormatted { get; set; }
-        public string? CPPBasicExemptionAmountFormatted { get; set; }
-        public string? FederalBasicPersonalAmountFormatted { get; set; }
-        public string? ProvincialBasicPersonalAmountFormatted { get; set; }
-        public string? CanadaEmploymentBaseAmountFormatted { get; set; }
+        public decimal? CPPRate { get; set; }
+        public decimal? CPPMaxAmount { get; set; }
+        public decimal? EIRate { get; set; }
+        public decimal? EIMaxAmount { get; set; }
+        public decimal? CPPBasicExemptionAmount { get; set; }
+        public decimal? FederalBasicPersonalAmount { get; set; }
+        public decimal? ProvincialBasicPersonalAmount { get; set; }
+        public decimal? CanadaEmploymentBaseAmount { get; set; }
     }
 }

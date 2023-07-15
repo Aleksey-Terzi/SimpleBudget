@@ -3,10 +3,10 @@ import { Alert, Card } from "react-bootstrap";
 import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 import TaxSettingGrid from "./components/TaxSettingGrid";
-import { TaxSettingGridModel } from "./models/taxSettingGridModel";
+import { TaxSettingModel } from "./models/taxSettingModel";
 
 export default function TaxSettings() {
-    const [items, setItems] = useState<TaxSettingGridModel[]>();
+    const [model, setModel] = useState<TaxSettingModel>();
     const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,7 @@ export default function TaxSettings() {
 
         requestHelper.TaxSettings.getTaxSettings()
             .then(r => {
-                setItems(r);
+                setModel(r);
             })
             .catch(e => {
                 setError(responseHelper.getErrorMessage(e));
@@ -30,12 +30,12 @@ export default function TaxSettings() {
             <Card.Header>
                 <Card.Title>
                     Tax Settings
-                    {items && <small className="ms-1">({items.length})</small>}
+                    {model?.items && <small className="ms-1">({model.items.length})</small>}
                 </Card.Title>
             </Card.Header>
             <Card.Body>
                 {!error ? (
-                    <TaxSettingGrid items={items} loading={loading} />
+                    <TaxSettingGrid valueFormat={model?.valueFormat} items={model?.items} loading={loading} />
                 ) : (
                     <Alert variant="danger">
                         {error}

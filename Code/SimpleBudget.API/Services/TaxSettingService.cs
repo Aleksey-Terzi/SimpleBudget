@@ -29,7 +29,7 @@ namespace SimpleBudget.API
             _currencySearch = currencySearch;
         }
 
-        public async Task<List<TaxSettingGridModel>> GetTaxSettings()
+        public async Task<TaxSettingModel> GetTaxSettings()
         {
             var currency = await _currencySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Code == "CAD");
             var valueFormat = currency?.ValueFormat ?? "${0:n2}";
@@ -55,20 +55,24 @@ namespace SimpleBudget.API
                 var item = new TaxSettingGridModel
                 {
                     Year = year,
-                    CPPRateFormatted = FormatHelper.FormatPercent(cpp?.Rate),
-                    CPPMaxAmountFormatted = FormatHelper.FormatValueOrNull(cpp?.MaxAmount, valueFormat),
-                    EIRateFormatted = FormatHelper.FormatPercent(ei?.Rate),
-                    EIMaxAmountFormatted = FormatHelper.FormatValueOrNull(ei?.MaxAmount, valueFormat),
-                    CPPBasicExemptionAmountFormatted = FormatHelper.FormatValueOrNull(cppBasicExemptionAmount, valueFormat),
-                    FederalBasicPersonalAmountFormatted = FormatHelper.FormatValueOrNull(federalBasicPersonalAmount, valueFormat),
-                    ProvincialBasicPersonalAmountFormatted = FormatHelper.FormatValueOrNull(provincialBasicPersonalAmount, valueFormat),
-                    CanadaEmploymentBaseAmountFormatted = FormatHelper.FormatValueOrNull(canadaEmploymentBaseAmount, valueFormat),
+                    CPPRate = cpp?.Rate,
+                    CPPMaxAmount = cpp?.MaxAmount,
+                    EIRate = ei?.Rate,
+                    EIMaxAmount = ei?.MaxAmount,
+                    CPPBasicExemptionAmount = cppBasicExemptionAmount,
+                    FederalBasicPersonalAmount = federalBasicPersonalAmount,
+                    ProvincialBasicPersonalAmount = provincialBasicPersonalAmount,
+                    CanadaEmploymentBaseAmount = canadaEmploymentBaseAmount,
                 };
 
                 items.Add(item);
             }
 
-            return items;
+            return new TaxSettingModel
+            {
+                ValueFormat = valueFormat,
+                Items = items
+            };
         }
 
         public async Task<TaxSettingEditModel> GetTaxSetting(int year)

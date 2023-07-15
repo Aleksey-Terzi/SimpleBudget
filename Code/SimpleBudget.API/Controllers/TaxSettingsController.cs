@@ -16,7 +16,7 @@ namespace SimpleBudget.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<TaxSettingGridModel>>> GetTaxSettings()
+        public async Task<ActionResult<TaxSettingModel>> GetTaxSettings()
         {
             return await _service.GetTaxSettings();
         }

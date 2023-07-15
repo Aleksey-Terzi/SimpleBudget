@@ -1,14 +1,16 @@
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import LoadingPanel from "../../../components/LoadingPanel";
-import { TaxSettingGridModel } from "../models/taxSettingGridModel";
+import numberHelper from "../../../utils/numberHelper";
+import { TaxSettingGridModel } from "../models/taxSettingModel";
 
 interface Props {
+    valueFormat?: string;
     items?: TaxSettingGridModel[];
     loading: boolean;
 }
 
-export default function TaxSettingGrid({ items, loading }: Props) {
+export default function TaxSettingGrid({ valueFormat, items, loading }: Props) {
     const currentYear = new Date().getFullYear();
     var hasCurrentYearSettings = !!items?.find(x => x.year === currentYear);
 
@@ -45,19 +47,19 @@ export default function TaxSettingGrid({ items, loading }: Props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {!loading && items && items.map(item => (
+                            {!loading && valueFormat && items && items.map(item => (
                                 <tr key={item.year}>
                                     <td>
                                         {item.year}
                                     </td>
-                                    <td className="text-end">{item.cppRateFormatted}</td>
-                                    <td className="text-end">{item.cppMaxAmountFormatted}</td>
-                                    <td className="text-end">{item.eiRateFormatted}</td>
-                                    <td className="text-end">{item.eiMaxAmountFormatted}</td>
-                                    <td className="text-end">{item.cppBasicExemptionAmountFormatted}</td>
-                                    <td className="text-end">{item.federalBasicPersonalAmountFormatted}</td>
-                                    <td className="text-end">{item.provincialBasicPersonalAmountFormatted}</td>
-                                    <td className="text-end">{item.canadaEmploymentBaseAmountFormatted}</td>
+                                    <td className="text-end">{item.cppRate && numberHelper.formatPercent(item.cppRate)}</td>
+                                    <td className="text-end">{item.cppMaxAmount && numberHelper.formatCurrency(item.cppMaxAmount, valueFormat)}</td>
+                                    <td className="text-end">{item.eiRate && numberHelper.formatPercent(item.eiRate)}</td>
+                                    <td className="text-end">{item.eiMaxAmount && numberHelper.formatCurrency(item.eiMaxAmount, valueFormat)}</td>
+                                    <td className="text-end">{item.cppBasicExemptionAmount && numberHelper.formatCurrency(item.cppBasicExemptionAmount, valueFormat)}</td>
+                                    <td className="text-end">{item.federalBasicPersonalAmount && numberHelper.formatCurrency(item.federalBasicPersonalAmount, valueFormat)}</td>
+                                    <td className="text-end">{item.provincialBasicPersonalAmount && numberHelper.formatCurrency(item.provincialBasicPersonalAmount, valueFormat)}</td>
+                                    <td className="text-end">{item.canadaEmploymentBaseAmount && numberHelper.formatCurrency(item.canadaEmploymentBaseAmount, valueFormat)}</td>
                                     <td className="text-end">
                                         <Link
                                             className="btn btn-link p-1"

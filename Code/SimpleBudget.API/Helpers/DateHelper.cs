@@ -4,13 +4,6 @@ namespace SimpleBudget.API
 {
     public static class DateHelper
     {
-        public static string? Format(DateTime? value)
-        {
-            return value.HasValue
-                ? $"{value:MMM d, yyyy}"
-                : null;
-        }
-
         public static string? ToClient(DateTime? value)
         {
             return value.HasValue

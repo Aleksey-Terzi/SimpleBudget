@@ -53,9 +53,9 @@ namespace SimpleBudget.API
                     CurrencyId = x.CurrencyId,
                     Code = x.Code,
                     ValueFormat = x.ValueFormat,
-                    MarketStartDate = DateHelper.Format(x.MarketRate?.StartDate),
+                    MarketStartDate = DateHelper.ToClient(x.MarketRate?.StartDate),
                     MarketRate = x.MarketRate?.Rate,
-                    BankStartDate = DateHelper.Format(x.BankRate?.StartDate),
+                    BankStartDate = DateHelper.ToClient(x.BankRate?.StartDate),
                     BankRate = x.BankRate?.Rate,
                 })
                 .ToArray();
