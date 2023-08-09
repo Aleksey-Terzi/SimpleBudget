@@ -13,6 +13,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\routes\currencies\models\" />
+    <Folder Include="src\routes\import\models\" />
+    <Folder Include="src\routes\import\components\" />
     <Folder Include="src\routes\login\models\" />
     <Folder Include="src\routes\dictionaries\" />
     <Folder Include="src\routes\payments\utils\" />

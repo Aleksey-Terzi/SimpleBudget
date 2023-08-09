@@ -198,7 +198,7 @@ export default function TaxSettingEdit() {
                             <Card.Body>
                                 <TaxRateGrid
                                     rates={federalTaxRates}
-                                    useFormReturn={useFormReturn}
+                                    formSettings={useFormReturn}
                                     loading={loading}
                                     saving={saving || deleting}
                                     onAddRate={() => onAddRate("fed")}
@@ -217,7 +217,7 @@ export default function TaxSettingEdit() {
                             <Card.Body>
                                 <TaxRateGrid
                                     rates={provincialTaxRates}
-                                    useFormReturn={useFormReturn}
+                                    formSettings={useFormReturn}
                                     loading={loading}
                                     saving={saving || deleting}
                                     onAddRate={() => onAddRate("prov")}

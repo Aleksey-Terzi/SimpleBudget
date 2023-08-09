@@ -6,7 +6,7 @@ import { TaxRateGridModel } from "../models/taxRateGridModel";
 
 interface Props {
     rates?: TaxRateGridModel[];
-    useFormReturn: UseFormReturn<FieldValues, any>,
+    formSettings: UseFormReturn<FieldValues, any>,
     loading: boolean;
     saving: boolean;
     onAddRate: () => void;
@@ -67,7 +67,7 @@ export default function TaxRateGrid(props: Props) {
                                     maxLength={5}
                                     defaultValue={rate.rate}
                                     disabled={props.saving}
-                                    useFormReturn={props.useFormReturn}
+                                    formSettings={props.formSettings}
                                 />
                             </td>
                             <td>
@@ -77,7 +77,7 @@ export default function TaxRateGrid(props: Props) {
                                     maxLength={20}
                                     defaultValue={rate.maxAmount}
                                     disabled={props.saving}
-                                    useFormReturn={props.useFormReturn}
+                                    formSettings={props.formSettings}
                                 />
                             </td>
                             <td>

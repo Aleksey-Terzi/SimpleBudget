@@ -3,13 +3,7 @@ import validatorHelper from "../../../utils/validatorHelper";
 
 export function getPaymentEditSchema(wallets: string[], persons: string[]) {
     const numberValid = validatorHelper.getMoneyValidator();
-
-    const walletExists = yup.string()
-        .test(
-            "walletExists",
-            "Wallet doesn't exist",
-            (item) => !!(!item || wallets.find(x => x.toLowerCase() === item?.toLowerCase()))
-        );
+    const walletExists = validatorHelper.getWalletValidator(wallets);
 
     return yup.object().shape({
         date: yup.date()

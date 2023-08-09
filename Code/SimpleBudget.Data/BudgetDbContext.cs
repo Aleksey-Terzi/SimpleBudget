@@ -9,6 +9,7 @@ namespace SimpleBudget.Data
         internal DbSet<Company> Companies { get; set; } = default!;
         internal DbSet<Currency> Currencies { get; set; } = default!;
         internal DbSet<CurrencyRate> CurrencyRates { get; set; } = default!;
+        internal DbSet<ImportPayment> ImportPayments { get; set; } = default!;
         internal DbSet<Payment> Payments { get; set; } = default!;
         internal DbSet<PlanPayment> PlanPayments { get; set; } = default!;
         internal DbSet<Person> Persons { get; set; } = default!;
@@ -31,6 +32,7 @@ namespace SimpleBudget.Data
             builder.ApplyConfiguration(new CompanyConfiguration());
             builder.ApplyConfiguration(new CurrencyConfiguration());
             builder.ApplyConfiguration(new CurrencyRateConfiguration());
+            builder.ApplyConfiguration(new ImportPaymentConfiguration());
             builder.ApplyConfiguration(new PaymentConfiguration());
             builder.ApplyConfiguration(new PlanPaymentConfiguration());
             builder.ApplyConfiguration(new PersonConfiguration());

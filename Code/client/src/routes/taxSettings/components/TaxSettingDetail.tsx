@@ -77,7 +77,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={5}
                         defaultValue={model?.cppRate}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwCpp}
                 </div>
@@ -93,7 +93,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.cppMaxAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwCpp}
                 </div>
@@ -109,7 +109,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={5}
                         defaultValue={model?.eiRate}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwEi}
                 </div>
@@ -125,7 +125,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.eiMaxAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwEi}
                 </div>
@@ -141,7 +141,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.cppBasicExemptionAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwCpp}
                 </div>
@@ -157,7 +157,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.federalBasicPersonalAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwFederalBasicPersonalAmount}
                 </div>
@@ -173,7 +173,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.provincialBasicPersonalAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwProvincialBasicPersonalAmount}
                 </div>
@@ -189,7 +189,7 @@ export default function TaxSettingDetail({ model, useFormReturn, saving }: Props
                         maxLength={20}
                         defaultValue={model?.canadaEmploymentBaseAmount}
                         disabled={saving}
-                        useFormReturn={useFormReturn}
+                        formSettings={useFormReturn}
                     />
                     {wwwCanadaEmploymentBaseAmount}
                 </div>

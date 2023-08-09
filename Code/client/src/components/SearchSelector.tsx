@@ -3,6 +3,7 @@ import { FormControl } from "react-bootstrap";
 import stringHelper from "../utils/stringHelper";
 
 interface Props {
+    className?: string,
     name?: string,
     title?: string,
     defaultValue?: string;
@@ -15,7 +16,7 @@ interface Props {
     onBlur?: (e: FocusEvent) => void;
 }
 
-const SearchSelector = forwardRef(({ name, title, defaultValue, value, disabled, items, isInvalid, maxLength, onChange, onBlur }: Props, ref: any) => {
+const SearchSelector = forwardRef(({ className, name, title, defaultValue, value, disabled, items, isInvalid, maxLength, onChange, onBlur }: Props, ref: any) => {
     function handleButtonClick(e: any) {
         const $root = e.target.parentElement;
         const $menu = $root.querySelector("ul");
@@ -214,7 +215,7 @@ const SearchSelector = forwardRef(({ name, title, defaultValue, value, disabled,
     }
 
     return (
-        <div className="input-group custom-selector">
+        <div className={`input-group custom-selector${className ? " " + className : ""}`}>
             <FormControl
                 ref={ref}
                 name={name}

@@ -81,6 +81,8 @@ builder.Services.AddScoped<CurrencySearch>();
 builder.Services.AddScoped<CurrencyStore>();
 builder.Services.AddScoped<CurrencyRateSearch>();
 builder.Services.AddScoped<CurrencyRateStore>();
+builder.Services.AddScoped<ImportPaymentSearch>();
+builder.Services.AddScoped<ImportPaymentStore>();
 builder.Services.AddScoped<PaymentSearch>();
 builder.Services.AddScoped<PaymentStore>();
 builder.Services.AddScoped<PersonSearch>();
@@ -113,6 +115,8 @@ builder.Services.AddScoped<SummaryReportService>();
 builder.Services.AddScoped<MonthlyReportService>();
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddScoped<CurrencyRateService>();
+builder.Services.AddScoped<ImportPaymentSearchService>();
+builder.Services.AddScoped<ImportPaymentUpdateService>();
 
 builder.Services.AddCors();
 

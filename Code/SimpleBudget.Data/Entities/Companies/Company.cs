@@ -13,6 +13,7 @@ namespace SimpleBudget.Data
 
         public ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
         public ICollection<PlanPayment> PlanPayments { get; set; } = new HashSet<PlanPayment>();
+        public ICollection<ImportPayment> ImportPayments { get; set; } = new HashSet<ImportPayment>();
     }
 
     public class CompanyConfiguration : IEntityTypeConfiguration<Company>

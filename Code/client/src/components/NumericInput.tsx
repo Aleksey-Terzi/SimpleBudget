@@ -5,7 +5,7 @@ import numberHelper from "../utils/numberHelper";
 interface Props {
     name: string;
     autoFocus?: boolean;
-    useFormReturn: UseFormReturn<FieldValues, any>;
+    formSettings: UseFormReturn<FieldValues, any>;
     disabled?: boolean;
     defaultValue?: number;
     maxLength?: number;
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function NumericInput(props: Props) {
-    const { register, formState: { errors } } = props.useFormReturn;
+    const { register, formState: { errors } } = props.formSettings;
 
     let defaultValueText;
     switch (props.type) {

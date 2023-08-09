@@ -48,7 +48,7 @@ namespace SimpleBudget.API
                 Years = new List<int>()
             };
 
-            for (int i = 2020; i <= now.Year; i++)
+            for (int i = now.Year; i >= 2020; i--)
                 model.Years.Add(i);
 
             await AddReportMonthlyAsync(model, cad.ValueFormat);

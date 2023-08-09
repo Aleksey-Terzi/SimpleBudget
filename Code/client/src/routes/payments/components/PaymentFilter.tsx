@@ -164,6 +164,10 @@ export default function PaymentFilter({ filter }: Props) {
                         </Link>
                     </ButtonGroup>
 
+                    <Link className="btn btn-outline-secondary me-2" to="/payments/import" tabIndex={-1} title="Import">
+                        <i className="bi-capslock-fill"></i>
+                    </Link>
+
                     <Link className="btn btn-secondary" to="/payments/add" tabIndex={-1}>
                         <i className="bi-plus-circle me-1"></i>
                         Add Payment

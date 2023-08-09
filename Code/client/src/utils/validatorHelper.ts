@@ -13,6 +13,20 @@ const validatorHelper = {
                     return (result === undefined) || (!isNaN(result) && result > 0);
                 }
             );
+    },
+    getWalletValidator: (wallets: string[]) => {
+        return yup
+            .string()
+            .test(
+                "walletExists",
+                "Wallet doesn't exist",
+                (item) => !!(!item || wallets.find(x => x.toLowerCase() === item?.toLowerCase()))
+            );
+    },
+    getFileRequired: () => {
+        return yup
+            .mixed()
+            .test("fileRequired", "The file is required", x => x && (x as any).length);
     }
 }
 

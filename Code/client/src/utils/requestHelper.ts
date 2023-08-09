@@ -4,6 +4,7 @@ import { CategoryEditModel } from "../routes/categories/models/categoryEditModel
 import { CompanyEditModel } from "../routes/companies/models/companyEditModel";
 import { CurrencyEditModel } from "../routes/currencies/models/currencyEditModel";
 import { CurrencyRateEditModel } from "../routes/currencies/models/currencyRateEditModel";
+import { NewImportPaymentModel } from "../routes/import/models/newImportPaymentModel";
 import { PaymentFilterModel } from "../routes/payments/models/paymentFilterModel";
 import { PaymentModel } from "../routes/payments/models/paymentModel";
 import { PlanPaymentFilterModel } from "../routes/plans/models/planPaymentFilterModel";
@@ -54,11 +55,25 @@ axios.interceptors.response.use(async response => {
     }
 )
 
+function formDataFromValues (values: any) {
+    const formData = new FormData();
+    for (const key in values) {
+        formData.append(key, values[key]);
+    }
+    return formData;
+}
+
 const requests = {
     get: (url: string, params?: URLSearchParams) => axios.get(url, { params }).then(response => response.data),
     post: (url: string, body: {}) => axios.post(url, body).then(response => response.data),
     put: (url: string, body: {}) => axios.put(url, body).then(response => response.data),
-    delete: (url: string) => axios.delete(url).then(response => response.data)
+    delete: (url: string) => axios.delete(url).then(response => response.data),
+
+    postForm: (url: string, data: FormData) => axios
+        .post(url, data, {
+            headers: { "Content-type": "multipart/form-data" }
+        })
+        .then(response => response.data)
 }
 
 const Selectors = {
@@ -145,6 +160,11 @@ const TaxSettings = {
     deleteTaxSetting: (year: number) => requests.delete(`taxsettings/${year}`)
 }
 
+const Import = {
+    uploadFile: (file: any) => requests.postForm("import/upload", formDataFromValues({ file })),
+    savePayments: (wallet: string, payments: NewImportPaymentModel[]) => requests.post("import/save", { wallet, payments })
+}
+
 const requestHelper = {
     Selectors,
     Payments,
@@ -156,7 +176,8 @@ const requestHelper = {
     Companies,
     Wallets,
     Currencies,
-    TaxSettings
+    TaxSettings,
+    Import
 }
 
 export default requestHelper
