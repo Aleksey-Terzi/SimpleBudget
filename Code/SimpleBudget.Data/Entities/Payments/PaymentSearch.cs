@@ -82,10 +82,10 @@ namespace SimpleBudget.Data
 
         private static IQueryable<Payment> FilterQuery(PaymentFilter filter, IQueryable<Payment> query)
         {
-            var result = query.Where(x => x.Wallet.AccountId == filter.AccountId);
+            query = query.Where(x => x.Wallet.AccountId == filter.AccountId);
 
             if (!filter.IncludeChildren)
-                result = result.Where(x => x.ParentPaymentId == null);
+                query = query.Where(x => x.ParentPaymentId == null);
 
             if (!string.IsNullOrEmpty(filter.Type))
             {
@@ -97,11 +97,11 @@ namespace SimpleBudget.Data
                     query = query.Where(x => x.Category.Name == "Transfer");
             }
 
-            result = filter.AdvancedFilter == null
-                ? AddSimpleFilter(filter, result)
-                : AddAdvancedFilter(filter.Type, filter.AdvancedFilter, result);
+            query = filter.AdvancedFilter == null
+                ? AddSimpleFilter(filter, query)
+                : AddAdvancedFilter(filter.Type, filter.AdvancedFilter, query);
 
-            return result;
+            return query;
         }
 
         private static IQueryable<Payment> AddSimpleFilter(PaymentFilter filter, IQueryable<Payment> query)
