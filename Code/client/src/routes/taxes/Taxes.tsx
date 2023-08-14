@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Alert, Card, Col, Form, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Card, Col, Form, Row, Stack } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LoadingButton from "../../components/LoadingButton";
 import LoadingPanel from "../../components/LoadingPanel";
+import YearSelector from "../../components/YearSelector";
 import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 import TaxableIncome from "./components/TaxableIncome";
@@ -16,6 +17,8 @@ export default function Tax() {
     const [submitting, setSubmitting] = useState(false);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const personRef = useRef<HTMLSelectElement>(null);
+    const yearRef = useRef<HTMLSelectElement>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -39,8 +42,8 @@ export default function Tax() {
     }, [searchParams]);
 
     function handleCriteriaChange() {
-        const personId = (document.getElementById("personId") as any).value;
-        const year = (document.getElementById("year") as any).value;
+        const personId = personRef.current!.value;
+        const year = yearRef.current!.value;
 
         const url = `/taxes?personId=${personId}&year=${year}`;
 
@@ -87,37 +90,35 @@ export default function Tax() {
                     <>
                         <Row className="mb-3">
                             <Col md="6">
-                                <span className="me-1">Person:</span>
+                                <Stack direction="horizontal">
+                                    Person:
 
-                                <Form.Select
-                                    id="personId"
-                                    className="me-3 d-inline w-25"
-                                    defaultValue={model.selectedPersonId}
-                                    disabled={submitting}
-                                    onChange={handleCriteriaChange}
-                                >
-                                    {model.persons.map(person => (
-                                        <option key={person.personId} value={person.personId}>
-                                            {person.name}
-                                        </option>
-                                    ))}
-                                </Form.Select>
+                                    <Form.Select
+                                        ref={personRef}
+                                        className="ms-1 me-3 w-25"
+                                        defaultValue={model.selectedPersonId}
+                                        disabled={submitting}
+                                        onChange={handleCriteriaChange}
+                                    >
+                                        {model.persons.map(person => (
+                                            <option key={person.personId} value={person.personId}>
+                                                {person.name}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
 
-                                <span className="me-1">Year:</span>
+                                    Year:
 
-                                <Form.Select
-                                    id="year"
-                                    className="d-inline w-25"
-                                    defaultValue={model.selectedYear}
-                                    disabled={submitting}
-                                    onChange={handleCriteriaChange}
-                                >
-                                    {model.years.map(year => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </Form.Select>
+                                    <YearSelector
+                                        ref={yearRef}
+                                        years={model.years}
+                                        allowEmpty={false}
+                                        className="ms-1 w-25"
+                                        defaultYear={model.selectedYear}
+                                        disabled={submitting}
+                                        onChange={handleCriteriaChange}
+                                    />
+                                </Stack>
                             </Col>
                         </Row>
                         <Row>

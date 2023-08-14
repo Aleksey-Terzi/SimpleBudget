@@ -7,10 +7,12 @@ interface Props {
     autoFocus?: boolean;
     formSettings: UseFormReturn<FieldValues, any>;
     disabled?: boolean;
+    readOnly?: boolean;
     defaultValue?: number;
     maxLength?: number;
     className?: string;
     type: "percent" | "money";
+    placeholder?: string;
 }
 
 export default function NumericInput(props: Props) {
@@ -34,8 +36,10 @@ export default function NumericInput(props: Props) {
             maxLength={props.maxLength || 20}
             defaultValue={defaultValueText}
             disabled={props.disabled}
+            readOnly={props.readOnly}
             isInvalid={!!errors[props.name]}
             title={errors[props.name]?.message as string}
+            placeholder={props.placeholder}
             {...register(props.name)}
         />
     );

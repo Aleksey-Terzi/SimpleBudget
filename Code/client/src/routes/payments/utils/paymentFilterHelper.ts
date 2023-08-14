@@ -56,6 +56,20 @@ const paymentFilterHelper = {
         filterParams = filterParams ? "?" + filterParams : "";
 
         return `/payments${filterParams}`;
+    },
+
+    isSimpleFilter: (text?: string) => {
+        if (!text || text.length === 0) {
+            return true;
+        }
+
+        try {
+            JSON.parse(text);
+        } catch (SyntaxError) {
+            return true;
+        }
+
+        return false;
     }
 }
 

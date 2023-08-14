@@ -42,7 +42,7 @@ export default function Payments() {
                 <Card.Title>Payments</Card.Title>
             </Card.Header>
             <Card.Body>
-                <PaymentFilter filter={filter} />
+                <PaymentFilter filter={filter} loading={loading} />
                 {!error ? (
                     <PaymentGrid
                         selectedPaymentId={filter?.id}

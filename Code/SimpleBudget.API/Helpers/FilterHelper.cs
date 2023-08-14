@@ -1,11 +1,40 @@
-﻿using SimpleBudget.Data;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
+using SimpleBudget.Data;
 using SimpleBudget.API.Models;
 
 namespace SimpleBudget.API
 {
     static class FilterHelper
     {
+        class AdvancedFilter
+        {
+            [JsonPropertyName("startDate")]
+            public string? StartDate { get; set; }
+
+            [JsonPropertyName("endDate")]
+            public string? EndDate { get; set; }
+
+            [JsonPropertyName("startValue")]
+            public decimal? StartValue { get; set; }
+
+            [JsonPropertyName("endValue")]
+            public decimal? EndValue { get; set; }
+
+            [JsonPropertyName("keyword")]
+            public string? Keyword { get; set; }
+
+            [JsonPropertyName("company")]
+            public string? Company { get; set; }
+
+            [JsonPropertyName("category")]
+            public string? Category { get; set; }
+
+            [JsonPropertyName("wallet")]
+            public string? Wallet { get; set; }
+        }
+
         public const int PageSize = 15;
         public const int PagesPerSection = 10;
 
@@ -62,7 +91,14 @@ namespace SimpleBudget.API
             filter.AccountId = accountId;
             filter.Type = type;
 
-            ParseText(text, filter, timeHelper);
+            if (filter is PaymentFilter paymentFilter)
+            {
+                paymentFilter.AdvancedFilter = GetAdvancedFilter(text);
+                if (paymentFilter.AdvancedFilter == null)
+                    ParseText(text, filter, timeHelper);
+            }
+            else
+                ParseText(text, filter, timeHelper);
         }
 
         private static void ParseText(string? text, IPaymentFilter filter, TimeHelper timeHelper)
@@ -84,36 +120,33 @@ namespace SimpleBudget.API
                 if (index == text.Length)
                 {
                     filter.SearchText = token.Trim();
+                    break;
                 }
-                else
-                {
+
+                index++;
+
+                while (index < text.Length && text[index] == ' ')
                     index++;
 
-                    while (index < text.Length && text[index] == ' ')
-                        index++;
+                if (index >= text.Length)
+                    break;
 
-                    string value;
+                var stopChar = text[index] == '"' ? '"' : ' ';
 
-                    if (index < text.Length)
-                    {
-                        var stopChar = text[index] == '"' ? '"' : ' ';
+                if (stopChar == '"')
+                    index++;
 
-                        if (stopChar == '"')
-                            index++;
+                startIndex = index;
 
-                        startIndex = index;
+                while (index < text.Length && text[index] != stopChar)
+                    index++;
 
-                        while (index < text.Length && text[index] != stopChar)
-                            index++;
+                var value = text.Substring(startIndex, index - startIndex);
 
-                        value = text.Substring(startIndex, index - startIndex);
+                if (index < text.Length)
+                    index++;
 
-                        if (index < text.Length)
-                            index++;
-
-                        SetFilterItem(token, value, filter, timeHelper);
-                    }
-                }
+                SetFilterItem(token, value, filter, timeHelper);
             }
         }
 
@@ -147,6 +180,38 @@ namespace SimpleBudget.API
             {
                 filter.SearchText = value;
             }
+        }
+
+        private static PaymentAdvancedFilter? GetAdvancedFilter(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            AdvancedFilter? advancedFilter;
+
+            try
+            {
+                advancedFilter = JsonSerializer.Deserialize<AdvancedFilter>(text);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+
+            if (advancedFilter == null)
+                return null;
+
+            return new PaymentAdvancedFilter
+            {
+                StartDate = DateHelper.ToServer(advancedFilter.StartDate),
+                EndDate = DateHelper.ToServer(advancedFilter.EndDate),
+                StartValue = advancedFilter.StartValue,
+                EndValue = advancedFilter.EndValue,
+                Keyword = advancedFilter.Keyword,
+                Company = advancedFilter.Company,
+                Category = advancedFilter.Category,
+                Wallet = advancedFilter.Wallet,
+            };
         }
     }
 }

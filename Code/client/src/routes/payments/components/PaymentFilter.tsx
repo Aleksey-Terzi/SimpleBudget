@@ -1,26 +1,31 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, ButtonGroup, Col, Form, Row, Stack } from "react-bootstrap";
+import { Alert, ButtonGroup, Col, Row, } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingButton from "../../../components/LoadingButton";
 import numberHelper from "../../../utils/numberHelper";
 import requestHelper from "../../../utils/requestHelper";
 import responseHelper from "../../../utils/responseHelper";
 import { useAppDispatch, useAppSelector } from "../../../utils/storeHelper";
+import userHelper from "../../../utils/userHelper";
 import { PaymentFilterModel } from "../models/paymentFilterModel";
 import { revertCalcSum, setSum } from "../models/paymentSlice";
 import paymentFilterHelper from "../utils/paymentFilterHelper";
+import PaymentAdvancedFilter from "./PaymentAdvancedFilter";
+import PaymentSimpleFilter from "./PaymentSimpleFilter";
 
 const filterHelper = paymentFilterHelper;
 
 interface Props {
     filter?: PaymentFilterModel;
+    loading: boolean;
 }
 
-export default function PaymentFilter({ filter }: Props) {
+export default function PaymentFilter({ filter, loading }: Props) {
     const { calcSum, sum, sumFormat } = useAppSelector(state => state.payment);
     const dispatch = useAppDispatch();
     const [calculating, setCalculating] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
+    const [isSimpleFilter, setIsSimpleFilter] = useState(true);
 
     const filterNoType = { ...filter, type: undefined };
     const expensesParams = filterHelper.getPaymentFilterParams(filter?.type === "expenses" ? filterNoType : { ...filter, type: "expenses" }, false, false) || "";
@@ -36,6 +41,16 @@ export default function PaymentFilter({ filter }: Props) {
     const type = filter?.type;
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const defaultIsSimpleFilter = !text || text.length === 0
+            ? userHelper.getPaymentsFilterType() !== "Advanced"
+            : paymentFilterHelper.isSimpleFilter(text);
+
+        console.log(userHelper.getPaymentsFilterType());
+
+        setIsSimpleFilter(defaultIsSimpleFilter);
+    }, [text]);
 
     useEffect(() => {
         if (!calcSum || !hasFilter) {
@@ -64,8 +79,7 @@ export default function PaymentFilter({ filter }: Props) {
             });
     }, [hasFilter, text, type, calcSum, dispatch]);
 
-    function searchByText() {
-        const text = (document.getElementById("FilterText") as any).value;
+    function onSearchByText(text: string) {
         const searchFilter = { ...filter, text, page: undefined };
 
         const filterParams = filterHelper.getPaymentFilterParams(searchFilter);
@@ -74,25 +88,12 @@ export default function PaymentFilter({ filter }: Props) {
         navigate(url);
     }
 
-    function onFilterTextKeyDown(e: any) {
-        if (e.keyCode === 13) {
-            searchByText();
-        }
-    }
+    function onSwitchFilter() {
+        const filterType = isSimpleFilter ? "Advanced" : "Simple";
 
-    function onFilterClick() {
-        searchByText();
+        userHelper.setPaymentsFilterType(filterType);
 
-        document.getElementById("FilterText")!.focus();
-    }
-
-    function onClearClick() {
-        const filterText = document.getElementById("FilterText");
-
-        (filterText as any).value = "";
-        searchByText();
-
-        filterText!.focus();
+        setIsSimpleFilter(!isSimpleFilter);
     }
 
     function onCalcSumClick() {
@@ -105,37 +106,23 @@ export default function PaymentFilter({ filter }: Props) {
 
     return (
         <Row className="mb-3">
-            <Col lg="5">
-                <Stack direction="horizontal">
-                    <Form.Control
-                        id="FilterText"
-                        type="text"
-                        className="me-1"
-                        maxLength={100}
-                        placeholder="Filter"
-                        defaultValue={filter?.text}
-                        autoComplete="off"
-                        onKeyDown={onFilterTextKeyDown}
+            <Col lg="6">
+                {isSimpleFilter ? (
+                    <PaymentSimpleFilter
+                        filter={filter}
+                        onSearchByText={onSearchByText}
+                        onSwitchFilter={onSwitchFilter}
                     />
-                    <Button
-                        variant="link"
-                        className="p-1"
-                        title="Filter"
-                        onClick={onFilterClick}
-                    >
-                        <i className="bi-search"></i>
-                    </Button>
-                    <Button
-                        variant="link"
-                        className="p-1"
-                        title="Clear Filter"
-                        onClick={onClearClick}
-                    >
-                        <i className="bi-x-lg"></i>
-                    </Button>
-                </Stack>
+                ) : (
+                    <PaymentAdvancedFilter
+                        filter={filter}
+                        loading={loading}
+                        onSearchByText={onSearchByText}
+                        onSwitchFilter={onSwitchFilter}
+                    />
+                )}
             </Col>
-            <Col lg="7">
+            <Col lg="6">
                 <div className="float-end mb-3">
                     <LoadingButton
                         variant="outline-secondary"

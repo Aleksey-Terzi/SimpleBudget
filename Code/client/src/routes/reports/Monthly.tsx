@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Alert, Card, Col, Form, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Card, Col, Row, Stack } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LoadingPanel from "../../components/LoadingPanel";
-import dateHelper from "../../utils/dateHelper";
+import MonthSelector from "../../components/MonthSelector";
+import YearSelector from "../../components/YearSelector";
 import requestHelper from "../../utils/requestHelper";
 import responseHelper from "../../utils/responseHelper";
 import MonthlyCategories from "./components/MonthlyCategories";
@@ -16,6 +17,8 @@ export default function Monthly() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const yearRef = useRef<HTMLSelectElement>(null);
+    const monthRef = useRef<HTMLSelectElement>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -39,8 +42,8 @@ export default function Monthly() {
     }, [searchParams]);
 
     function handleDateChange() {
-        const year = (document.getElementById("year") as any).value;
-        const month = (document.getElementById("month") as any).value;
+        const year = yearRef.current!.value;
+        const month = monthRef.current!.value;
 
         const url = `/reports/monthly?year=${year}&month=${month}`;
 
@@ -57,35 +60,26 @@ export default function Monthly() {
                     <>
                         <Row className="mb-3">
                             <Col md="6">
-                                <span className="me-1">Year:</span>
+                                <Stack direction="horizontal">
+                                    Year:
+                                    <YearSelector
+                                        ref={yearRef}
+                                        className="ms-1 me-3 w-25"
+                                        defaultYear={report.selectedYear}
+                                        years={report.years}
+                                        allowEmpty={false}
+                                        onChange={handleDateChange}
+                                    />
 
-                                <Form.Select
-                                    id="year"
-                                    className="me-3 d-inline w-25"
-                                    defaultValue={report.selectedYear}
-                                    onChange={handleDateChange}
-                                >
-                                    {report.years.map(year => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-
-                                <span className="me-1">Month:</span>
-
-                                <Form.Select
-                                    id="month"
-                                    className="d-inline w-25"
-                                    defaultValue={report.selectedMonth}
-                                    onChange={handleDateChange}
-                                >
-                                    {dateHelper.monthNames.map((monthName, index) => (
-                                        <option key={monthName} value={index + 1}>
-                                            {monthName}
-                                        </option>
-                                    ))}
-                                </Form.Select>
+                                    Month:
+                                    <MonthSelector
+                                        ref={monthRef}
+                                        className="ms-1 w-25"
+                                        defaultMonth={report.selectedMonth}
+                                        allowEmpty={false}
+                                        onChange={handleDateChange}
+                                    />
+                                </Stack>
                             </Col>
                         </Row>
                         <Row>

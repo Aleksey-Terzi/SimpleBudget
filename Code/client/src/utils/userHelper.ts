@@ -1,6 +1,7 @@
 import UserModel from "../models/userModel";
 
 const userKey = "user";
+const paymentsFilterTypeKey = "payments.filterType";
 
 const userHelper = {
     setUser: (user?: UserModel) => {
@@ -15,6 +16,14 @@ const userHelper = {
         const user = localStorage.getItem(userKey);
 
         return user && JSON.parse(user);
+    },
+
+    setPaymentsFilterType: (filter: "Simple" | "Advanced") => {
+        localStorage.setItem(paymentsFilterTypeKey, filter);
+    },
+
+    getPaymentsFilterType: () => {
+        return localStorage.getItem(paymentsFilterTypeKey);
     }
 }
 

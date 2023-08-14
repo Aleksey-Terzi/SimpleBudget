@@ -41,11 +41,16 @@ namespace SimpleBudget.API
             if (_timeHelper != null)
                 return;
 
-            var timezoneOffsetText = HttpContext.Request.Headers["X-Time-Zone-Offset"][0];
-            if (!int.TryParse(timezoneOffsetText, out var timezoneOffset))
-                throw new ArgumentException($"Invalid header X-Time-Zone-Offset value: {timezoneOffsetText}");
+            if (HttpContext.Request.Headers["X-Time-Zone-Offset"].Count == 0)
+                _timeHelper = new TimeHelper(0);
+            else
+            {
+                var timezoneOffsetText = HttpContext.Request.Headers["X-Time-Zone-Offset"][0];
+                if (!int.TryParse(timezoneOffsetText, out var timezoneOffset))
+                    throw new ArgumentException($"Invalid header X-Time-Zone-Offset value: {timezoneOffsetText}");
 
-            _timeHelper = new TimeHelper(timezoneOffset);
+                _timeHelper = new TimeHelper(timezoneOffset);
+            }
         }
     }
 }
