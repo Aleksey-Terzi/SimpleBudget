@@ -123,7 +123,11 @@ namespace SimpleBudget.Data
                 query = query.Where(x => x.PaymentDate.Month == filter.PaymentMonth);
 
             if (!string.IsNullOrEmpty(filter.Category))
-                query = query.Where(x => x.Category.Name == filter.Category);
+            {
+                query = string.Equals(filter.Category, "[No Category]", StringComparison.OrdinalIgnoreCase)
+                    ? query.Where(x => x.CategoryId == null)
+                    : query.Where(x => x.Category.Name == filter.Category);
+            }
 
             return query;
         }
@@ -150,7 +154,11 @@ namespace SimpleBudget.Data
                 query = query.Where(x => x.Company.Name!.Contains(filter.Company));
 
             if (!string.IsNullOrEmpty(filter.Category))
-                query = query.Where(x => x.Category.Name!.Contains(filter.Category));
+            {
+                query = string.Equals(filter.Category, "[No Category]", StringComparison.OrdinalIgnoreCase)
+                    ? query.Where(x => x.CategoryId == null)
+                    : query.Where(x => x.Category.Name!.Contains(filter.Category));
+            }
 
             if (!string.IsNullOrEmpty(filter.Wallet))
                 query = query.Where(x => x.Wallet.Name!.Contains(filter.Wallet));
