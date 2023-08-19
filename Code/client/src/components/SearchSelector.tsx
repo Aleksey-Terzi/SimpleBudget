@@ -29,6 +29,14 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
         }
     }
 
+    function handleInputFocus(e: any) {
+        showDropDownMenu(e.target.parentElement);
+
+        if (isFilterTextChanged(e.target)) {
+            filterMenuItems(e.target);
+        }
+    }
+
     function handleInputBlur(e: any) {
         const $root = e.target.parentElement;
 
@@ -106,6 +114,11 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
         scrollToMenuItem($menu.querySelector("li > button.active")?.parentElement);
     }
 
+    function isFilterTextChanged(input: any) {
+        return input.dataset.filterText
+            && (!input.value || !input.value.toLowerCase().includes(input.dataset.filterText));
+    }
+
     function filterMenuItems($input: any) {
         const $root = $input.parentElement;
         const $menu = $root.querySelector(".dropdown-menu");
@@ -115,6 +128,8 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
         }
 
         const text = $input.value?.toLowerCase();
+
+        $input.dataset.filterText = text;
 
         $menu.querySelector("li > button.active")?.classList.remove("active");
 
@@ -227,7 +242,7 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
                 disabled={disabled === true}
                 autoComplete="off"
                 isInvalid={isInvalid}
-                onFocus={(e) => showDropDownMenu(e.target.parentElement)}
+                onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
                 onKeyUp={handleInputKeyUp}
