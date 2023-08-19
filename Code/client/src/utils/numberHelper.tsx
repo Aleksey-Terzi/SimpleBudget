@@ -51,8 +51,13 @@ const numberHelper = {
         }
     },
 
-    formatNumber: (n?: number, abs = true) => {
+    formatNumber: (n?: number | string, abs = true) => {
         if (!n) return undefined;
+
+        if (typeof n === "string") {
+            n = numberHelper.parseNumber(n);
+            if (!n) return undefined;
+        }
 
         if (abs) {
             n = Math.abs(n);

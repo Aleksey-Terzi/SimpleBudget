@@ -1,11 +1,11 @@
 import { Form } from "react-bootstrap";
-import { FieldValues, UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 import numberHelper from "../utils/numberHelper";
 
 interface Props {
     name: string;
     autoFocus?: boolean;
-    formSettings: UseFormReturn<FieldValues, any>;
+    formSettings: UseFormReturn<any, any>;
     disabled?: boolean;
     readOnly?: boolean;
     defaultValue?: number;

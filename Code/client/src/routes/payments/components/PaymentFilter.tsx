@@ -47,8 +47,6 @@ export default function PaymentFilter({ filter, loading }: Props) {
             ? userHelper.getPaymentsFilterType() !== "Advanced"
             : paymentFilterHelper.isSimpleFilter(text);
 
-        console.log(userHelper.getPaymentsFilterType());
-
         setIsSimpleFilter(defaultIsSimpleFilter);
     }, [text]);
 

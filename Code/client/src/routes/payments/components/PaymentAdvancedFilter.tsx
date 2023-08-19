@@ -1,15 +1,12 @@
-import * as yup from "yup"
-import { yupResolver } from "@hookform/resolvers/yup";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row, Stack } from "react-bootstrap";
 import { PaymentFilterModel } from "../models/paymentFilterModel";
-import validatorHelper from "../../../utils/validatorHelper";
-import { useForm } from "react-hook-form";
-import NumericInput from "../../../components/NumericInput";
 import LoadingButton from "../../../components/LoadingButton";
-import { useEffect, useRef, useState } from "react";
 import dateHelper from "../../../utils/dateHelper";
 import numberHelper from "../../../utils/numberHelper";
-import { PaymentAdvancedFilterModel } from "../models/paymentAdvancedFilterModel";
+import { useForceUpdate } from "../../../hooks/useFormUpdate";
+import validatorHelper2 from "../../../utils/validatorHelper2";
 
 interface Props {
     filter?: PaymentFilterModel;
@@ -18,30 +15,40 @@ interface Props {
     onSwitchFilter: () => void;
 }
 
+interface FormValues {
+    startDateEmpty: boolean;
+    endDateEmpty: boolean;
+    startDate?: string;
+    endDate?: string;
+    startValue?: string;
+    endValue?: string;
+    keyword?: string;
+    company?: string;
+    category?: string;
+    wallet?: string;
+}
+
 export default function PaymentAdvancedFilter(props: Props) {
-    const [model, setModel] = useState<PaymentAdvancedFilterModel>();
-    const [startDateEmpty, setStartDateEmpty] = useState(true);
-    const [endDateEmpty, setEndDateEmpty] = useState(true);
-    const formRef = useRef<HTMLFormElement>(null);
+    const forceUpdate = useForceUpdate();
 
-    const numberValid = validatorHelper.getMoneyValidator();
-
-    const validationSchema = yup.object().shape({
-        startDate: yup.date().default(() => new Date()),
-        endDate: yup.date().default(() => new Date()),
-        startValue: numberValid,
-        endValue: numberValid,
-    });
-
-    const formSettings = useForm({
+    const { register, setValue, getValues, reset, handleSubmit, formState: { errors } } = useForm<FormValues>({
         mode: "onTouched",
-        resolver: yupResolver(validationSchema)
+        defaultValues: {
+            startDateEmpty: true,
+            endDateEmpty: true,
+            startDate: "",
+            endDate: "",
+            startValue: "",
+            endValue: "",
+            keyword: "",
+            company: "",
+            category: "",
+            wallet: ""
+        }
     });
 
-    const { register, setValue, reset, handleSubmit, formState: { errors } } = formSettings;
-
-    const startDateEmptyReg = register("startDateEmpty");
-    const endDateEmptyReg = register("endDateEmpty");
+    const startDateEmpty = getValues("startDateEmpty");
+    const endDateEmpty = getValues("endDateEmpty");
 
     useEffect(() => {
         if (!props.filter?.text || props.filter.text.length === 0) {
@@ -49,33 +56,33 @@ export default function PaymentAdvancedFilter(props: Props) {
         }
 
         try {
-            const defaultModel = JSON.parse(props.filter.text) as PaymentAdvancedFilterModel;
+            const model = JSON.parse(props.filter.text) as FormValues;
 
-            reset();
-
-            setModel(defaultModel);
-            setStartDateEmpty(!defaultModel.startDate);
-            setEndDateEmpty(!defaultModel.endDate);
+            setValue("startDateEmpty", !model.startDate);
+            setValue("endDateEmpty", !model.endDate);
+            setValue("startDate", model.startDate || "");
+            setValue("endDate", model.endDate || "");
+            setValue("startValue", model.startValue ? numberHelper.formatNumber(model.startValue) : "");
+            setValue("endValue", model.endValue ? numberHelper.formatNumber(model.endValue) : "");
+            setValue("keyword", model.keyword || "");
+            setValue("company", model.company || "");
+            setValue("category", model.category || "");
+            setValue("wallet", model.wallet || "");
         } catch (SyntaxError) {
             // Do nothing, text contains invalid JSON
         }
-    }, [props.filter?.text, setValue, reset]);
+    }, [props.filter?.text, setValue]);
 
-    function onFilter() {
-        const data = new FormData(formRef.current!);
-
-        const startDateEmpty = data.get("startDateEmpty") === "on";
-        const endDateEmpty = data.get("endDateEmpty") === "on";
-
+    function onFilter(values: FormValues) {
         const advancedFilter = {
-            startDate: !startDateEmpty ? data.get("startDate") as string : undefined,
-            endDate: !endDateEmpty ? data.get("endDate") as string : undefined,
-            startValue: numberHelper.parseNumber(data.get("startValue") as string)!,
-            endValue: numberHelper.parseNumber(data.get("endValue") as string)!,
-            keyword: undefinedIfEmpty(data.get("keyword") as string),
-            company: undefinedIfEmpty(data.get("company") as string),
-            category: undefinedIfEmpty(data.get("category") as string),
-            wallet: undefinedIfEmpty(data.get("wallet") as string),
+            startDate: !values.startDateEmpty ? values.startDate : undefined,
+            endDate: !values.endDateEmpty ? values.endDate : undefined,
+            startValue: numberHelper.parseNumber(values.startValue),
+            endValue: numberHelper.parseNumber(values.endValue),
+            keyword: undefinedIfEmpty(values.keyword),
+            company: undefinedIfEmpty(values.company),
+            category: undefinedIfEmpty(values.category),
+            wallet: undefinedIfEmpty(values.wallet)
         };
 
         let json = JSON.stringify(advancedFilter);
@@ -92,45 +99,24 @@ export default function PaymentAdvancedFilter(props: Props) {
     }
 
     function onClear() {
-        setValue("startDateEmpty", true);
-        setValue("endDateEmpty", true);
-        setValue("startDate", undefined);
-        setValue("endDate", undefined);
-        setValue("startValue", undefined);
-        setValue("endValue", undefined);
-        setValue("keyword", undefined);
-        setValue("company", undefined);
-        setValue("category", undefined);
-        setValue("wallet", undefined);
-
-        setStartDateEmpty(true);
-        setEndDateEmpty(true);
-
-        onFilter();
+        reset();
+        onFilter(getValues());
     }
 
     function onStartDateEmptyChange(e: any) {
-        setStartDateEmpty(e.target.checked);
-
-        const date = e.target.checked ? undefined : dateHelper.dateToString(new Date());
-
+        const date = e.target.checked ? "" : dateHelper.dateToString(new Date());
         setValue("startDate", date);
-
-        startDateEmptyReg.onChange(e);
+        forceUpdate();
     }
 
     function onEndDateEmptyChange(e: any) {
-        setEndDateEmpty(e.target.checked);
-
-        const date = e.target.checked ? undefined : dateHelper.dateToString(new Date());
-
+        const date = e.target.checked ? "" : dateHelper.dateToString(new Date());
         setValue("endDate", date);
-
-        endDateEmptyReg.onChange(e);
+        forceUpdate();
     }
 
     return (
-        <Form ref={formRef} noValidate onSubmit={handleSubmit(onFilter)} autoComplete="off">
+        <Form noValidate onSubmit={handleSubmit(onFilter)} autoComplete="off">
             <Row className="mb-2">
                 <Col lg="6">
                     <div className="mb-2">
@@ -142,7 +128,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Col lg="6">
                                 <Form.Control
                                     type="date"
-                                    defaultValue={model?.startDate}
                                     disabled={startDateEmpty}
                                     readOnly={props.loading}
                                     isInvalid={!!errors.startDate}
@@ -155,13 +140,11 @@ export default function PaymentAdvancedFilter(props: Props) {
                                     id="startDateEmpty"
                                     label="Empty"
                                     type="checkbox"
-                                    defaultChecked={startDateEmpty}
                                     disabled={props.loading}
                                     className="ms-2"
-                                    name={startDateEmptyReg.name}
-                                    ref={startDateEmptyReg.ref}
-                                    onChange={onStartDateEmptyChange}
-                                    onBlur={startDateEmptyReg.onBlur}
+                                    {...register("startDateEmpty", {
+                                        onChange: onStartDateEmptyChange
+                                    })}
                                 />
                             </Col>
                         </Row>
@@ -172,7 +155,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Col lg="6">
                                 <Form.Control
                                     type="date"
-                                    defaultValue={model?.endDate}
                                     disabled={endDateEmpty}
                                     readOnly={props.loading}
                                     isInvalid={!!errors.endDate}
@@ -185,14 +167,11 @@ export default function PaymentAdvancedFilter(props: Props) {
                                     id="endDateEmpty"
                                     label="Empty"
                                     type="checkbox"
-                                    defaultChecked={endDateEmpty}
                                     disabled={props.loading}
                                     className="ms-2"
-                                    name={endDateEmptyReg.name}
-                                    ref={endDateEmptyReg.ref}
-                                    onChange={onEndDateEmptyChange}
-                                    onBlur={endDateEmptyReg.onBlur}
-
+                                    {...register("endDateEmpty", {
+                                        onChange: onEndDateEmptyChange
+                                    })}
                                 />
                             </Col>
                         </Row>
@@ -201,24 +180,28 @@ export default function PaymentAdvancedFilter(props: Props) {
                     <div className="mb-2">
                         <label className="form-label">Value Range</label>
                         <Stack direction="horizontal">
-                            <NumericInput
-                                name="startValue"
-                                type="money"
-                                readOnly={props.loading}
-                                defaultValue={model?.startValue}
-                                formSettings={formSettings}
+                            <Form.Control
                                 className="me-3"
+                                maxLength={20}
+                                readOnly={props.loading}
+                                isInvalid={!!errors.startValue}
+                                title={errors.startValue?.message}
+                                {...register("startValue", {
+                                    validate: validatorHelper2.moneyValidator
+                                })}
                             />
 
                             to
 
-                            <NumericInput
-                                name="endValue"
-                                type="money"
-                                readOnly={props.loading}
-                                defaultValue={model?.endValue}
-                                formSettings={formSettings}
+                            <Form.Control
                                 className="ms-3"
+                                maxLength={20}
+                                readOnly={props.loading}
+                                isInvalid={!!errors.endValue}
+                                title={errors.endValue?.message}
+                                {...register("endValue", {
+                                    validate: validatorHelper2.moneyValidator
+                                })}
                             />
                         </Stack>
                     </div>
@@ -229,7 +212,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Form.Control
                                 maxLength={100}
                                 readOnly={props.loading}
-                                defaultValue={model?.keyword}
                                 {...register("keyword")}
                             />
                         </div>
@@ -242,7 +224,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Form.Control
                                 maxLength={100}
                                 readOnly={props.loading}
-                                defaultValue={model?.company}
                                 {...register("company")}
                             />
                         </div>
@@ -254,7 +235,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Form.Control
                                 maxLength={100}
                                 readOnly={props.loading}
-                                defaultValue={model?.category}
                                 {...register("category")}
                             />
                         </div>
@@ -266,7 +246,6 @@ export default function PaymentAdvancedFilter(props: Props) {
                             <Form.Control
                                 maxLength={100}
                                 readOnly={props.loading}
-                                defaultValue={model?.wallet}
                                 {...register("wallet")}
                             />
                         </div>
