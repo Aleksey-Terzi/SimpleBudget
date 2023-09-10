@@ -13,6 +13,7 @@ namespace SimpleBudget.Data
         public ICollection<Currency> Currencies { get; set; } = new HashSet<Currency>();
         public ICollection<ImportPayment> ImportPayments { get; set; } = new HashSet<ImportPayment>();
         public ICollection<Person> Persons { get; set; } = new HashSet<Person>();
+        public ICollection<Product> Products { get; set; } = new HashSet<Product>();
         public ICollection<TaxRate> TaxRates { get; set; } = new HashSet<TaxRate>();
         public ICollection<TaxSetting> TaxSettings { get; set; } = new HashSet<TaxSetting>();
         public ICollection<Wallet> Wallets { get; set; } = new HashSet<Wallet>();

@@ -26,6 +26,9 @@ export default function Header() {
                                 <NavLink className="nav-link" to={paymentsUrl}>Payments</NavLink>
                             </li>
                             <li className="nav-item">
+                                <NavLink className="nav-link" to="/productprices">Prices</NavLink>
+                            </li>
+                            <li className="nav-item">
                                 <NavLink className="nav-link" to="/reports/summary">Summary</NavLink>
                             </li>
                             <li className="nav-item">

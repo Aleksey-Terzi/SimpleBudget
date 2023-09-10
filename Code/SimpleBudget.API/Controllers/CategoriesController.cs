@@ -27,6 +27,17 @@ namespace SimpleBudget.API.Controllers
             _paymentSearch = paymentSearch;
         }
 
+        [HttpGet("selector")]
+        public async Task<ActionResult<List<string>>> GetSelectorCategories()
+        {
+            var categories = await _categorySearch.Bind(
+                x => x.Name,
+                x => x.AccountId == _identity.AccountId
+            );
+
+            return categories.OrderBy(x => x).ToList();
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<CategoryGridModel>>> GetCategories()
         {

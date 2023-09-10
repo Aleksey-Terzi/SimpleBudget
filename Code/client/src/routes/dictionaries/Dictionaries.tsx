@@ -19,6 +19,9 @@ export default function Dictionaries() {
                         <Link className="btn btn-outline-secondary w-100 d-block mb-3" to="/currencies">
                             Currencies
                         </Link>
+                        <Link className="btn btn-outline-secondary w-100 d-block mb-3" to="/products">
+                            Products
+                        </Link>
                         <Link className="btn btn-outline-secondary w-100 d-block mb-3" to="/taxsettings">
                             Taxes
                         </Link>

@@ -28,6 +28,13 @@ import CurrencyDelete from "./currencies/CurrencyDelete";
 import TaxSettings from "./taxSettings/TaxSettings";
 import TaxSettingEdit from "./taxSettings/TaxSettingEdit";
 import Import from "./import/Import";
+import Products from "./products/Products";
+import ProductEdit from "./products/ProductEdit";
+import ProductDelete from "./products/ProductDelete";
+import ProductPrices from "./productPrices/ProductPrices";
+import ProductPriceEdit from "./productPrices/ProductPriceEdit";
+import ProductPriceDelete from "./productPrices/ProductPriceDelete";
+import ProductPriceMultiAdd from "./productPrices/ProductPriceMultiAdd";
 
 export const router = createBrowserRouter([
     {
@@ -71,6 +78,17 @@ export const router = createBrowserRouter([
             { path: "/currencies/add", element: <CurrencyEdit /> },
             { path: "/currencies/:id", element: <CurrencyEdit /> },
             { path: "/currencies/:id/delete", element: <CurrencyDelete /> },
+
+            { path: "/products", element: <Products /> },
+            { path: "/products/add", element: <ProductEdit /> },
+            { path: "/products/:id", element: <ProductEdit /> },
+            { path: "/products/:id/delete", element: <ProductDelete /> },
+
+            { path: "/productprices", element: <ProductPrices /> },
+            { path: "/productprices/add", element: <ProductPriceEdit /> },
+            { path: "/productprices/addmulti", element: <ProductPriceMultiAdd /> },
+            { path: "/productprices/:id", element: <ProductPriceEdit /> },
+            { path: "/productprices/:id/delete", element: <ProductPriceDelete /> },
 
             { path: "/taxsettings", element: <TaxSettings /> },
             { path: "/taxsettings/:year", element: <TaxSettingEdit /> },

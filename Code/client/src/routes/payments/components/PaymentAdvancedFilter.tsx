@@ -28,6 +28,10 @@ interface FormValues {
     wallet?: string;
 }
 
+function undefinedIfEmpty(value?: string) {
+    return value && value.length > 0 ? value : undefined;
+}
+
 export default function PaymentAdvancedFilter(props: Props) {
     const forceUpdate = useForceUpdate();
 
@@ -92,10 +96,6 @@ export default function PaymentAdvancedFilter(props: Props) {
         }
 
         props.onSearchByText(json);
-    }
-
-    function undefinedIfEmpty(value?: string) {
-        return value && value.length > 0 ? value : undefined;
     }
 
     function onClear() {

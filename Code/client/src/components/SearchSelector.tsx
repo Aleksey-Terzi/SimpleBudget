@@ -1,4 +1,4 @@
-import { ChangeEvent, forwardRef } from "react";
+import { ChangeEvent, FormEvent, forwardRef } from "react";
 import { FormControl } from "react-bootstrap";
 import stringHelper from "../utils/stringHelper";
 
@@ -14,9 +14,10 @@ interface Props {
     maxLength?: number,
     onChange?: (e: ChangeEvent) => void;
     onBlur?: (e: FocusEvent) => void;
+    onInput?: (e: FormEvent) => void;
 }
 
-const SearchSelector = forwardRef(({ className, name, title, defaultValue, value, disabled, items, isInvalid, maxLength, onChange, onBlur }: Props, ref: any) => {
+const SearchSelector = forwardRef(({ className, name, title, defaultValue, value, disabled, items, isInvalid, maxLength, onChange, onBlur, onInput }: Props, ref: any) => {
     function handleButtonClick(e: any) {
         const $root = e.target.parentElement;
         const $menu = $root.querySelector("ul");
@@ -247,6 +248,7 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
                 onKeyDown={handleInputKeyDown}
                 onKeyUp={handleInputKeyUp}
                 onChange={onChange}
+                onInput={onInput}
             />
             <button
                 type="button"

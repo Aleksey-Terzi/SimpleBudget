@@ -1,40 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { PaymentModel } from "./models/paymentModel";
+import { ProductPriceEditModel } from "./models/productPriceEditModel";
 import requestHelper from "../../utils/requestHelper";
-import paymentFilterHelper from "./utils/paymentFilterHelper";
+import filterHelper from "./utils/productPriceFilterHelper";
 import { Alert, Card, Col, Row } from "react-bootstrap";
 import numberHelper from "../../utils/numberHelper";
 import LoadingPanel from "../../components/LoadingPanel";
 import LoadingButton from "../../components/LoadingButton";
-import { useAppSelector } from "../../utils/storeHelper";
 import responseHelper from "../../utils/responseHelper";
 import dateHelper from "../../utils/dateHelper";
-
-const filterHelper = paymentFilterHelper;
 
 export default function PaymentDelete() {
     const idText = useParams<{ id: string }>().id;
     const id = parseInt(idText!);
     const [error, setError] = useState<string | undefined>();
-    const [item, setItem] = useState<PaymentModel | undefined>();
+    const [model, setModel] = useState<ProductPriceEditModel>();
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
-    const { filter } = useAppSelector(state => state.payment);
-    const cancelPaymentsUrl = filterHelper.getPaymentsUrl(filter, id);
+    const cancelProductPricesUrl = filterHelper.getProductPricesUrl(undefined, id);
 
     useEffect(() => {
         if (isNaN(id)) {
-            setError("The payment is not found")
+            setError("The product price is not found")
             return;
         }
 
         setLoading(true);
 
-        requestHelper.Payments.getPayment(id)
+        requestHelper.ProductPrices.getProductPrice(id)
             .then(r => {
-                setItem(r);
+                setModel(r);
             })
             .catch(e => {
                 setError(responseHelper.getErrorMessage(e));
@@ -44,12 +40,12 @@ export default function PaymentDelete() {
             });
     }, [id]);
 
-    function handleDeleteClick() {
+    function onDelete() {
         setDeleting(true);
 
-        requestHelper.Payments.deletePayment(id!)
+        requestHelper.ProductPrices.deleteProductPrice(id!)
             .then(() => {
-                const paymentsUrl = filterHelper.getPaymentsUrl(filter);
+                const paymentsUrl = filterHelper.getProductPricesUrl();
 
                 navigate(paymentsUrl);
             })
@@ -62,61 +58,45 @@ export default function PaymentDelete() {
         <Card>
             <Card.Header>
                 <Card.Title>
-                    Delete Payment #{idText}
+                    Delete Product Price #{idText}
                 </Card.Title>
             </Card.Header>
             <Card.Body>
-                {!loading && !error && item && (
+                {!loading && !error && model && (
                     <Row>
                         <Col md="6">
                             <div className="mb-3">
-                                <label className="form-label">Type</label>
-                                <div>{item.paymentType}</div>
+                                <label className="form-label">Price Date</label>
+                                <div>{dateHelper.formatDate(model.priceDate)}</div>
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label">Date</label>
-                                <div>{dateHelper.formatDate(item.date)}</div>
+                                <label className="form-label">Product</label>
+                                <div>{model.productName}</div>
                             </div>
 
                             <div className="mb-3">
                                 <label className="form-label">Company</label>
-                                <div>{item.company || "None"}</div>
+                                <div>{model.companyName || "None"}</div>
                             </div>
 
                             <div className="mb-3">
                                 <label className="form-label">Category</label>
-                                <div>{item.category || "None"}</div>
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">Wallet</label>
-                                <div>{item.wallet}</div>
+                                <div>{model.categoryName || "None"}</div>
                             </div>
 
                             <div className="mb-3">
                                 <label className="form-label">Description</label>
-                                <div>{item.description || "None"}</div>
+                                <div>{model.description || "None"}</div>
                             </div>
 
                             <div className="mb-3">
                                 <label className="form-label">Value</label>
-                                <div>{numberHelper.formatNumber(item.value)}</div>
+                                <div>
+                                    {numberHelper.formatNumber(model.price)}
+                                    {model.isDiscount ? <span className="ms-2">(Discounted)</span> : ""}
+                                </div>
                             </div>
-
-                            {item.paymentType.toLowerCase() === "transfer" && (
-                                <>
-                                    <div className="mb-3">
-                                        <label className="form-label">Transfer to Wallet</label>
-                                        <div>{item.walletTo}</div>
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <label className="form-label">Transferred Value</label>
-                                        <div>{numberHelper.formatNumber(item.valueTo)}</div>
-                                    </div>
-                                </>
-                            )}
 
                             <LoadingButton
                                 variant="danger"
@@ -124,10 +104,10 @@ export default function PaymentDelete() {
                                 loading={deleting}
                                 text="Delete"
                                 loadingText="Deleting..."
-                                onClick={handleDeleteClick}
+                                onClick={onDelete}
                             />
 
-                            <Link to={cancelPaymentsUrl} className="btn btn-secondary">
+                            <Link to={cancelProductPricesUrl} className="btn btn-secondary">
                                 Cancel
                             </Link>
                         </Col>
@@ -138,7 +118,7 @@ export default function PaymentDelete() {
                         {error}
                     </Alert>
                 )}
-                {loading && <LoadingPanel text="Loading Payment..." />}
+                {loading && <LoadingPanel text="Loading Product Price..." />}
             </Card.Body>
         </Card>
     );

@@ -12,6 +12,7 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\build</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="src\hooks\" />
     <Folder Include="src\routes\currencies\models\" />
     <Folder Include="src\routes\import\models\" />
     <Folder Include="src\routes\import\components\" />
@@ -20,10 +21,16 @@
     <Folder Include="src\routes\payments\utils\" />
     <Folder Include="src\routes\plans\components\" />
     <Folder Include="src\routes\plans\utils\" />
+    <Folder Include="src\routes\productPrices\models\" />
+    <Folder Include="src\routes\productPrices\utils\" />
+    <Folder Include="src\routes\products\components\" />
     <Folder Include="src\routes\reports\models\" />
     <Folder Include="src\routes\reports\components\" />
     <Folder Include="src\routes\taxes\components\" />
     <Folder Include="src\routes\taxes\models\" />
     <Folder Include="src\routes\taxSettings\utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="src\utils\requestHelper.ts~RF12df0b1.TMP" />
   </ItemGroup>
 </Project>

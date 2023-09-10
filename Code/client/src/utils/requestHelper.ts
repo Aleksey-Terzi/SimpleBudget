@@ -9,11 +9,18 @@ import { PaymentFilterModel } from "../routes/payments/models/paymentFilterModel
 import { PaymentModel } from "../routes/payments/models/paymentModel";
 import { PlanPaymentFilterModel } from "../routes/plans/models/planPaymentFilterModel";
 import { PlanPaymentModel } from "../routes/plans/models/planPaymentModel";
+import { ProductPriceEditModel } from "../routes/productPrices/models/productPriceEditModel";
+import { ProductPriceFilterModel } from "../routes/productPrices/models/productPriceFilterModel";
+import { ProductPriceGridModel } from "../routes/productPrices/models/productPriceGridModel";
+import { ProductSelectorModel } from "../routes/products/models/productSelectorModel";
+import { ProductEditModel } from "../routes/products/models/productEditModel";
+import { ProductGridModel } from "../routes/products/models/productGridModel";
 import { router } from "../routes/Routes";
 import { TaxSettingEditModel } from "../routes/taxSettings/models/taxSettingEditModel";
 import { WalletEditModel } from "../routes/wallets/models/walletEditModel";
 import paramHelper from "./paramHelper";
 import userHelper from "./userHelper";
+import { ProductPriceMultiModel } from "../routes/productPrices/models/productPriceMultiModel";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 axios.defaults.withCredentials = true;
@@ -29,7 +36,7 @@ axios.interceptors.request.use(config => {
     return config;
 })
 
-axios.interceptors.response.use(async response => {
+axios.interceptors.response.use(response => {
         if (process.env.NODE_ENV === "development") {
             // await (new Promise(resolve => setTimeout(resolve, 500)));
         }
@@ -118,7 +125,8 @@ const Categories = {
     createCategory: (item: CategoryEditModel) => requests.post("categories", item),
     updateCategory: (id: number, item: CategoryEditModel) => requests.put(`categories/${id}`, item),
     deleteCategory: (id: number) => requests.delete(`categories/${id}`),
-    categoryExists: (name: string, excludeId?: number) => requests.get(`categories/exists?name=${encodeURIComponent(name)}&excludeId=${excludeId || ""}`)
+    categoryExists: (name: string, excludeId?: number) => requests.get(`categories/exists?name=${encodeURIComponent(name)}&excludeId=${excludeId || ""}`),
+    getSelectorCategories: async () => await requests.get("categories/selector") as string[],
 }
 
 const Companies = {
@@ -165,6 +173,25 @@ const Import = {
     savePayments: (wallet: string, payments: NewImportPaymentModel[]) => requests.post("import/save", { wallet, payments })
 }
 
+const Products = {
+    getProducts: async () => await requests.get("products") as ProductGridModel[],
+    getProduct: async (id: number) => await requests.get(`products/${id}`) as ProductEditModel,
+    getSelectorProducts: async () => await requests.get("products/selector") as ProductSelectorModel[],
+    createProduct: (model: ProductEditModel) => requests.post("products", model),
+    updateProduct: (id: number, model: ProductEditModel) => requests.put(`products/${id}`, model),
+    deleteProduct: (id: number) => requests.delete(`products/${id}`),
+    productExists: async (name: string, excludeId?: number) => await requests.get(`products/exists?name=${encodeURIComponent(name)}&excludeId=${excludeId || ""}`) as boolean
+}
+
+const ProductPrices = {
+    search: async (filter: ProductPriceFilterModel) => await requests.get("productprices", paramHelper.getParams(filter)) as PaginatedResponse<ProductPriceGridModel>,
+    getProductPrice: async (id: number) => await requests.get(`productprices/${id}`) as ProductPriceEditModel,
+    createProductPrice: async (model: ProductPriceEditModel) => await requests.post("productprices", model) as number,
+    createProductPriceMulti: async (model: ProductPriceMultiModel) => await requests.post("productprices/multi", model) as number[],
+    updateProductPrice: (id: number, model: ProductPriceEditModel) => requests.put(`productprices/${id}`, model),
+    deleteProductPrice: (id: number) => requests.delete(`productprices/${id}`),
+}
+
 const requestHelper = {
     Selectors,
     Payments,
@@ -177,7 +204,9 @@ const requestHelper = {
     Wallets,
     Currencies,
     TaxSettings,
-    Import
+    Import,
+    Products,
+    ProductPrices
 }
 
 export default requestHelper

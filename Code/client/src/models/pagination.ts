@@ -8,11 +8,18 @@ export interface PaginationData {
 }
 
 export class PaginatedResponse<T> {
-    items: T;
+    items: T[];
+    valueFormat?: string;
     paginationData: PaginationData;
 
-    constructor(items: T, paginationData: PaginationData) {
-        this.items = items;
+    constructor(data: any, paginationData: PaginationData) {
+        if (data?.valueFormat) {
+            this.items = data.items as T[];
+            this.valueFormat = data.valueFormat;
+        } else {
+            this.items = data as T[];
+        }
+
         this.paginationData = paginationData;
     }
 }
