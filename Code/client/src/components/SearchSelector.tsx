@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, forwardRef } from "react";
+import { ChangeEvent, FormEvent, forwardRef, useRef } from "react";
 import { FormControl } from "react-bootstrap";
 import stringHelper from "../utils/stringHelper";
 
@@ -18,6 +18,9 @@ interface Props {
 }
 
 const SearchSelector = forwardRef(({ className, name, title, defaultValue, value, disabled, items, isInvalid, maxLength, onChange, onBlur, onInput }: Props, ref: any) => {
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const isFocused = inputRef.current && inputRef.current === document.activeElement;
+
     function handleButtonClick(e: any) {
         const $root = e.target.parentElement;
         const $menu = $root.querySelector("ul");
@@ -31,7 +34,11 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
     }
 
     function handleInputFocus(e: any) {
-        showDropDownMenu(e.target.parentElement);
+        const $root = e.target.parentElement;
+
+        $root.classList.add("focus");
+
+        showDropDownMenu($root);
 
         if (isFilterTextChanged(e.target)) {
             filterMenuItems(e.target);
@@ -40,6 +47,8 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
 
     function handleInputBlur(e: any) {
         const $root = e.target.parentElement;
+
+        $root.classList.remove("focus");
 
         if (e.relatedTarget !== $root.querySelector("button")) {
             if (e.relatedTarget) {
@@ -231,9 +240,12 @@ const SearchSelector = forwardRef(({ className, name, title, defaultValue, value
     }
 
     return (
-        <div className={`input-group custom-selector${className ? " " + className : ""}`}>
+        <div className={`input-group custom-selector${className ? " " + className : ""}${isInvalid ? " is-invalid" : ""}${isFocused ? " focus" : ""}`}>
             <FormControl
-                ref={ref}
+                ref={(e: any) => {
+                    ref(e);
+                    inputRef.current = e;
+                }}
                 name={name}
                 type="text"
                 title={title}

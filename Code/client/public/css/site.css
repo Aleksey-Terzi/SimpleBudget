@@ -86,3 +86,44 @@ table .zero {
 .custom-selector .btn {
     background-color: #fff;
 }
+
+.custom-selector {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    outline: 0;
+}
+
+.custom-selector.is-invalid {
+    border-color: #dc3545;
+}
+
+.custom-selector.focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.custom-selector.is-invalid.focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.custom-selector .dropdown-toggle {
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    border-left: 1px solid #ced4da;
+}
+
+.custom-selector .form-control {
+    border-left: none;
+    border-top: none;
+    border-bottom: none;
+    border-right: 1px solid #ced4da;
+    box-shadow: none;
+}
+
+.custom-selector .form-control:focus {
+    border: none;
+    border-right: 1px solid #ced4da;
+    box-shadow: none;
+}
