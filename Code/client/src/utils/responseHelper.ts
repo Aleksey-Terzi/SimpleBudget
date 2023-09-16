@@ -1,6 +1,12 @@
 const responseHelper = {
     getErrorMessage: (e: any) => {
-        return (e?.status ? `HTTP status: ${e.status}` : e?.statusText) || "Unknown error";
+        if (!e?.status) {
+            return 'Unknown error';
+        }
+
+        const details = e.data?.title ? `. ${e.data.title}` : '';
+
+        return `HTTP status: ${e.status}${details}`;
     }
 }
 
