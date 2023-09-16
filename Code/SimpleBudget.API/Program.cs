@@ -123,6 +123,7 @@ builder.Services.AddScoped<ImportPaymentSearchService>();
 builder.Services.AddScoped<ImportPaymentUpdateService>();
 builder.Services.AddScoped<ProductPriceSearchService>();
 builder.Services.AddScoped<ProductPriceUpdateService>();
+builder.Services.AddScoped<ClientLockService>();
 
 builder.Services.AddCors();
 

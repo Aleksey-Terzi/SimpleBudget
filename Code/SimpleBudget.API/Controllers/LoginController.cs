@@ -7,19 +7,31 @@ namespace SimpleBudget.API.Controllers
     public class LoginController : BaseApiController
     {
         private readonly TokenService _tokenService;
+        private readonly ClientLockService _lockService;
 
-        public LoginController(TokenService tokenService)
+        public LoginController(TokenService tokenService, ClientLockService lockService)
         {
             _tokenService = tokenService;
+            _lockService = lockService;
         }
 
         [HttpPost]
         public async Task<ActionResult<LoginResponseModel>> Login(LoginRequestModel model)
         {
-            var result = await _tokenService.GenerateTokenAsync(model.Username, model.Password);
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            
+            if (_lockService.IsLocked(model.Username, ipAddress))
+                return Unauthorized("You are blocked from logging in for 15 min");
 
-            if (string.IsNullOrEmpty(result.Token))
-                return Unauthorized();
+            var result = await _tokenService.GenerateTokenAsync(model.Username, model.Password);
+            if (result.Status != TokenService.Status.Success)
+            {
+                _lockService.Fail(model.Username, ipAddress);
+                return Unauthorized("Username or password is incorrect");
+            }
+
+            if (_lockService.Success(model.Username, ipAddress) == ClientLockService.Status.Locked)
+                return Unauthorized("You are blocked from logging in for 15 min");
 
             var cookieOptions = new CookieOptions
             {
@@ -32,7 +44,7 @@ namespace SimpleBudget.API.Controllers
 
             return new LoginResponseModel
             {
-                Token = result.Token
+                Token = result.Token!
             };
         }
     }

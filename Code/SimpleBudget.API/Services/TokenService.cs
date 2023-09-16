@@ -12,6 +12,8 @@ namespace SimpleBudget.API
 {
     public class TokenService
     {
+        public enum Status { WrongUsername, WrongPassword, Success }
+
         private readonly JwtOptions _jwt;
         private readonly UserSearch _userSearch;
 
@@ -21,11 +23,14 @@ namespace SimpleBudget.API
             _userSearch = userSearch;
         }
 
-        public async Task<(string? Token, string? Error)> GenerateTokenAsync(string username, string password)
+        public async Task<(string? Token, Status Status)> GenerateTokenAsync(string username, string password)
         {
-            var user = await _userSearch.SelectFirst(x => x.Name == username && x.Password == password);
+            var user = await _userSearch.SelectFirst(x => x.Name == username);
             if (user == null)
-                return (null, "Username or password is incorrect");
+                return (null, Status.WrongUsername);
+
+            if (!string.Equals(user.Password, password))
+                return (null, Status.WrongPassword);
 
             var claims = new List<Claim>
             {
@@ -46,7 +51,7 @@ namespace SimpleBudget.API
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 
-            return (token, null);
+            return (token, Status.Success);
         }
     }
 }

@@ -55,7 +55,7 @@ export default function Login() {
             })
             .catch((e) => {
                 if (e?.status === 401) {
-                    setError("Username or password is incorrect");
+                    setError(e.data);
                 } else {
                     setError(responseHelper.getErrorMessage(e));
                 }
