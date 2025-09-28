@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    @apply text-main-text
+}
+
+.loading_spinner {
+    transform-origin:center;
+    animation:loading_spinner_keyframes .75s infinite linear
+}
+
+@keyframes loading_spinner_keyframes {
+    100% {
+        transform:rotate(360deg)
+    }
+}

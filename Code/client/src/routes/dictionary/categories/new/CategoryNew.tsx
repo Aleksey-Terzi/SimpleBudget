@@ -1,0 +1,67 @@
+import { restClient } from "@/api/restClient";
+import { cache } from "@/cache/cache";
+import FormSection from "@/components/form/FormSection";
+import Button from "@/components/Button";
+import FormField from "@/components/form/FormField";
+import TextInput from "@/components/inputs/TextInput";
+import { useNewForm } from "@/hooks/useNewForm";
+
+interface FormValues {
+    name: string;
+}
+
+export default function CategoryNew() {
+    const {
+        backUrl,
+        isSaving,
+        register,
+        errors,
+        handleSubmit,
+    } = useNewForm(
+        "Category",
+        { name: "" },
+        save
+    );
+    
+    return (
+        <form autoComplete="off" onSubmit={handleSubmit}>
+            <FormSection>
+                <div className="w-[20rem]">
+                    <FormField label="Name" required>
+                        <TextInput
+                            {...register("name", {
+                                required: true,
+                                validate: async (name) => {
+                                    return await restClient.categories.exists(name, 0)
+                                        ? "The category with such a name already exists"
+                                        : undefined;
+                                }
+                            })}
+                            autoFocus
+                            maxLength={50}
+                            readOnly={isSaving}
+                            error={errors.name}
+                        />
+                    </FormField>
+                </div>
+                <div className="flex gap-1 mt-6">
+                    <Button
+                        variant="submit"
+                        isLoading={isSaving}
+                    />
+                    <Button
+                        variant="cancel"
+                        disabled={isSaving}
+                        href={backUrl}
+                    />
+                </div>
+            </FormSection>
+        </form>
+    )
+}
+
+async function save(values: FormValues) {
+    const id = await restClient.categories.create(values.name);
+    cache.onDictionaryChanged("categories");
+    return id;
+}

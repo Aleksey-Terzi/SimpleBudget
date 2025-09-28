@@ -1,22 +1,14 @@
-import Header from './components/Header';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { routes } from "./routes/routes";
+import ToastProvider from "./contexts/ToastProvider";
 
-function App() {
-    const location = useLocation();
+// eslint-disable-next-line react-refresh/only-export-components
+export const router = createBrowserRouter(routes);
 
-    return location.pathname === "/" ? (
-        <Navigate to="/payments" />
-    ): (
-        <>
-            <Header />
-
-            <div className="container container-body pb-5">
-                <div className="pb-3">
-                    <Outlet />
-                </div>
-            </div>
-        </>
-    )
+export default function App() {
+    return (
+        <ToastProvider>
+            <RouterProvider router={router} />
+        </ToastProvider>
+    );
 }
-
-export default App;
