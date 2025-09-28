@@ -1,7 +1,7 @@
 ﻿namespace SimpleBudget.Data
 {
-    public class AccountStore : StoreHelper<Account>
+    public class AccountStore
     {
-        public AccountStore(BudgetDbContext context) : base(context) { }
+        public AccountStore() { }
     }
 }

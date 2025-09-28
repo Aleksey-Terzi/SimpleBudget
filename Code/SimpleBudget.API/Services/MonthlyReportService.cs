@@ -152,11 +152,11 @@ namespace SimpleBudget.API
                     categoryName = "[No Category]";
                 else if (!categories.TryGetValue(payment.CategoryId.Value, out categoryName))
                 {
-                    var category = await _categorySearch.SelectFirst(x => x.CategoryId == payment.CategoryId);
-                    if (category == null)
+                    categoryName = await _categorySearch.GetAsync(x => x.Name, x => x.CategoryId == payment.CategoryId);
+                    if (categoryName == null)
                         throw new ArgumentException($"Category with id = {payment.CategoryId} is not found");
 
-                    categories.Add(payment.CategoryId.Value, categoryName = category.Name);
+                    categories.Add(payment.CategoryId.Value, categoryName);
                 }
 
                 if (!rates.TryGetValue(payment.WalletId, out var rate))

@@ -4,8 +4,8 @@ on: [workflow_dispatch]
 
 env:
   AZURE_WEBAPP_NAME: SimpleBudget    # set this to your application's name
-  DOTNET_VERSION: '7.x.x'           # set this to the dot net version to use
-  NODE_VERSION: '18.x'
+  DOTNET_VERSION: '9.x.x'           # set this to the dot net version to use
+  NODE_VERSION: '24.x'
 
 jobs:
   build:

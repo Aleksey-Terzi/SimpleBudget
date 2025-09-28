@@ -40,7 +40,7 @@ namespace SimpleBudget.API.Controllers
                 .OrderBy(x => x)
                 .ToList();
 
-            model.Categories = (await _categorySearch.Bind(x => x.Name, x => x.AccountId == _identity.AccountId))
+            model.Categories = (await _categorySearch.GetListAsync(x => x.Name, x => x.AccountId == _identity.AccountId))
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();

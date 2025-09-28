@@ -18,17 +18,21 @@ namespace SimpleBudget.API
             if (string.IsNullOrEmpty(name))
                 return null;
 
-            var category = await _categorySearch.SelectFirst(x => x.AccountId == accountId && x.Name == name);
-            if (category == null)
-            {
-                category = new Category
-                {
-                    AccountId = accountId,
-                    Name = name
-                };
+            var categoryId = await _categorySearch.GetAsync(
+                x => (int?)x.CategoryId,
+                x => x.AccountId == accountId && x.Name == name
+            );
 
-                await _categoryStore.Insert(category);
-            }
+            if (categoryId != null)
+                return categoryId;
+
+            var category = new Category
+            {
+                AccountId = accountId,
+                Name = name
+            };
+
+            await _categoryStore.InsertAsync(category);
 
             return category.CategoryId;
         }

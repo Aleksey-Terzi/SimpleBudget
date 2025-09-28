@@ -145,14 +145,16 @@ if (app.Environment.IsDevelopment())
             .WithOrigins("http://localhost:3000");
     });
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<IdentityMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

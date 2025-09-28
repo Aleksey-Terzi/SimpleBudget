@@ -30,7 +30,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("selector")]
         public async Task<ActionResult<List<string>>> GetSelectorCategories()
         {
-            var categories = await _categorySearch.Bind(
+            var categories = await _categorySearch.GetListAsync(
                 x => x.Name,
                 x => x.AccountId == _identity.AccountId
             );
@@ -41,7 +41,7 @@ namespace SimpleBudget.API.Controllers
         [HttpGet]
         public async Task<ActionResult<List<CategoryGridModel>>> GetCategories()
         {
-            var categories = await _categorySearch.Bind(
+            var categories = await _categorySearch.GetListAsync(
                 x => new CategoryGridModel
                 {
                     CategoryId = x.CategoryId,
@@ -57,15 +57,19 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryEditModel>> GetCategory(int id)
         {
-            var category = await _categorySearch.SelectFirst(x => x.CategoryId == id && x.AccountId == _identity.AccountId);
-            if (category == null)
+            var name = await _categorySearch.GetAsync(
+                x => x.Name,
+                x => x.CategoryId == id && x.AccountId == _identity.AccountId
+            );
+
+            if (name == null)
                 return BadRequest(new ProblemDetails { Title = "Category doesn't exist" });
 
             var paymentCount = await _paymentSearch.Count(x => x.CategoryId == id);
 
             return new CategoryEditModel
             {
-                Name = category.Name,
+                Name = name,
                 PaymentCount = paymentCount
             };
         }
@@ -73,14 +77,17 @@ namespace SimpleBudget.API.Controllers
         [HttpGet("exists")]
         public async Task<ActionResult<bool>> CategoryExists(string name, int? excludeId)
         {
-            var item = await _categorySearch.SelectFirst(x => x.AccountId == _identity.AccountId && x.Name == name);
-            return item != null && item.CategoryId != excludeId;
+            var categoryId = await _categorySearch.GetAsync(
+                x => x.CategoryId,
+                x => x.AccountId == _identity.AccountId && x.Name == name
+            );
+            return categoryId != excludeId;
         }
 
         [HttpPost]
         public async Task<ActionResult<int>> CreateCategory(CategoryEditModel model)
         {
-            if (await _categorySearch.Exists(x => x.AccountId == _identity.AccountId && x.Name == model.Name))
+            if (await _categorySearch.ExistsAsync(x => x.AccountId == _identity.AccountId && x.Name == model.Name))
                 return BadRequest(new ProblemDetails { Title = "The category with such a name already exists" });
 
             var category = new Category
@@ -89,7 +96,7 @@ namespace SimpleBudget.API.Controllers
                 Name = model.Name
             };
 
-            await _categoryStore.Insert(category);
+            await _categoryStore.InsertAsync(category);
 
             return category.CategoryId;
         }
@@ -97,13 +104,13 @@ namespace SimpleBudget.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateCategory(int id, CategoryEditModel model)
         {
-            var category = await _categorySearch.SelectFirst(x => x.CategoryId == id && x.AccountId == _identity.AccountId);
+            var category = await _categorySearch.GetAsync(x => x, x => x.CategoryId == id && x.AccountId == _identity.AccountId);
             if (category == null)
                 return BadRequest(new ProblemDetails { Title = "Category doesn't exist" });
 
             category.Name = model.Name;
 
-            await _categoryStore.Update(category);
+            await _categoryStore.UpdateAsync(category);
 
             return Ok();
         }
@@ -111,14 +118,14 @@ namespace SimpleBudget.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCategory(int id)
         {
-            var category = await _categorySearch.SelectFirst(x => x.CategoryId == id && x.AccountId == _identity.AccountId);
+            var category = await _categorySearch.GetAsync(x => x, x => x.CategoryId == id && x.AccountId == _identity.AccountId);
             if (category == null)
                 return BadRequest(new ProblemDetails { Title = "Category doesn't exist" });
 
             if (await _paymentSearch.Exists(x => x.CategoryId == id))
                 return BadRequest(new ProblemDetails { Title = "Category has payments" });
 
-            await _categoryStore.Delete(category);
+            await _categoryStore.DeleteAsync(category);
 
             return Ok();
         }

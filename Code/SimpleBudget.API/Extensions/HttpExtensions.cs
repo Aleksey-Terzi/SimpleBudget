@@ -10,7 +10,7 @@ namespace SimpleBudget.API
         {
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-            response.Headers.Add("Pagination", JsonSerializer.Serialize(data, options));
+            response.Headers["Pagination"] = JsonSerializer.Serialize(data, options);
 
             AddExposedHeader(response, "Pagination");
         }
