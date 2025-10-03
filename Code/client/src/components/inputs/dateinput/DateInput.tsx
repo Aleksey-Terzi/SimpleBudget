@@ -12,6 +12,7 @@ export interface DateInputProps {
     className?: string;
     disabled?: boolean;
     readOnly?: boolean;
+    autoFocus?: boolean;
     value?: DateParts | InvalidDate | null;
     defaultValue?: DateParts | InvalidDate | null;
     placeholder?: string;
@@ -26,6 +27,7 @@ export default function DateInput({
     className,
     disabled,
     readOnly,
+    autoFocus,
     value,
     defaultValue,
     placeholder,
@@ -75,6 +77,7 @@ export default function DateInput({
                 title={errorTooltip}
                 disabled={disabled}
                 readOnly={readOnly}
+                autoFocus={autoFocus}
                 value={text}
                 placeholder={placeholder}
                 maxLength={20}

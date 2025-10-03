@@ -22,7 +22,7 @@ export default function PaymentSearch_Criteria() {
         >
             <form
                 autoComplete="off"
-                onSubmit={handleSubmit(v => setCriteria({...v, id: null}))}
+                onSubmit={handleSubmit(v => setCriteria({...v, type: criteria.type, id: null}))}
                 className="max-w-[48rem]"
             >
                 <div className="grid grid-cols-2 gap-3 mb-2">

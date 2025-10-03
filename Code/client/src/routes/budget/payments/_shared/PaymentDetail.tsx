@@ -107,6 +107,7 @@ export default function PaymentDetail({
                         required={true}
                         placeholder="MM/dd/yyyy"
                         readOnly={isDisabled}
+                        autoFocus
                     />
                 </FormField>
 
